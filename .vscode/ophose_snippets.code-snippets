@@ -1,0 +1,79 @@
+{
+	// JS Components
+	"Create Ophose component": {
+		"scope": "javascript",
+		"prefix": ["occ", "ophcc"],
+		"body": [
+			"class $TM_FILENAME_BASE extends Ophose.Component {",
+			"",
+			"\tconstructor(props) {",
+			"\t\tsuper(props);",
+			"\t}",
+			"",
+			"\tstyle() {",
+			"\t\treturn /* css */`",
+			"\t\t\t%self {",
+			"\t\t\t\t",
+			"\t\t\t}",
+			"\t\t`",
+			"\t}",
+			"",
+			"\trender() {",
+			"\t\treturn {_: 'div', children: [",
+			"\t\t\t",
+			"\t\t]}",
+			"\t}",
+			"}",
+		]
+	},
+
+	"Import Ophose component": {
+		"scope": "javascript",
+		"prefix": ["oic", "ophic"],
+		"body": [
+			"oimpc(\"${0}\");"
+		]
+	},
+
+	// JS Pages
+	"Create Ophose page": {
+		"scope": "javascript",
+		"prefix": ["ocp", "ophcp"],
+		"body": [
+			"class ${0:$TM_FILENAME_BASE} extends Ophose.Page {",
+			"",
+			"\tconstructor(urlQueries) {",
+			"\t\tsuper(urlQueries);",
+			"\t}",
+			"",
+			"\tstyle() {",
+			"\t\treturn /* css */`",
+			"\t\t\t",
+			"\t\t`",
+			"\t}",
+			"",
+			"\trender() {",
+			"\t\treturn {_: 'div', children: [",
+			"\t\t\t",
+			"\t\t]}",
+			"\t}",
+			"}",
+			"",
+			"oshare(${0:$TM_FILENAME_BASE});"
+		]
+	},
+
+	// JS Environment
+	"Call Ophose environment": {
+		"scope": "javascript",
+		"prefix": ["oce", "ophce"],
+		"body": [
+			"oenv(${0:endpoint}, {})"
+			".then((response) => {",
+			"\t${2:response}",
+			"}).catch((error) => {",
+			"\t${3:error}",
+			"});"
+		]
+	}
+}
