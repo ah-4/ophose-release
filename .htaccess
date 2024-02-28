@@ -1,0 +1,5 @@
+RewriteEngine On
+
+Options -Indexes
+
+RewriteRule ^(.*)$ ophose/app/in/http.php [L]
