@@ -48,3 +48,24 @@ function o_get_files_recursive($dir, $ext = null, $max_recursion = 512)
 
     return $files;
 }
+
+/**
+ * Removes a directory and its content
+ * @param string $dir the directory
+ * @return bool
+ */
+function o_rm_dir_recursive($dir)
+{
+    if(!is_dir($dir)) return false;
+    $dir = realpath($dir);
+    foreach (scandir($dir) as $file) {
+        if ($file == '.' || $file == '..') continue;
+        if (is_dir($dir . DIRECTORY_SEPARATOR . $file)) {
+            o_rm_dir_recursive($dir . DIRECTORY_SEPARATOR . $file);
+        } else {
+            unlink($dir . DIRECTORY_SEPARATOR . $file);
+        }
+    }
+    rmdir($dir);
+    return true;
+}

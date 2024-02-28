@@ -8,6 +8,8 @@ define('OPHOSE_URL', "https://ophose.ah4.fr");
 define('EXT_ENV_PATH', ROOT . "/env/.ext/");
 define('CPN_ENV_PATH', ROOT . "/components/.ext/");
 
+$shouldReinstall = COMMAND->hasOption('u');
+
 $stats = [
     "installed" => 0,
     "failed" => 0,
@@ -64,24 +66,30 @@ foreach($dependencies as $name=>$version) {
         if(!file_exists($env_path)) {
             mkdir($env_path, 0777, true);
         }else{
-            echo "Dependency " . $author . ":" . $name . " already exists.\n";
-            $zip->close();
-            unlink($path);
-            if($response["type"] === "Environment") {
-                $env = Env::getEnvironment($env_path);
-                if(!$env) continue;
-                try {
-                    echo "Running installation...\n";
-                    $env->onInstall();
-                    echo "Re-installed " . $name . " with version " . $version . ".\n";
-                    $stats["re-installed"]++;
-                } catch(Error $e) {
-                    echo "Failed to install " . $name . " with version " . $version . ".\n";
-                    echo $e->getMessage() . "\n";
-                    $stats["failed"]++;
+            if($shouldReinstall) {
+                echo "Re-installing " . $name . " with version " . $version . ".\n";
+                o_rm_dir_recursive($env_path);
+            }else{
+                echo "Dependency " . $author . ":" . $name . " already exists.\n";
+                $zip->close();
+                unlink($path);
+                if($response["type"] === "Environment") {
+                    $env = Env::getEnvironment($env_path);
+                    if(!$env) continue;
+                    try {
+                        echo "Running installation...\n";
+                        $env->onInstall();
+                        echo "Re-installed " . $name . " with version " . $version . ".\n";
+                        $stats["re-installed"]++;
+                    } catch(Error $e) {
+                        echo "Failed to install " . $name . " with version " . $version . ".\n";
+                        echo $e->getMessage() . "\n";
+                        $stats["failed"]++;
+                    }
                 }
+                continue;
             }
-            continue;
+            
         }
         $zip->extractTo($env_path);
         $zip->close();
