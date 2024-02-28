@@ -4,22 +4,32 @@ use Ophose\Configuration;
 use Ophose\Env;
 
 $dependencies = CONFIG["dependencies"];
-$OPHOSE_URL = "https://ophose.ah4.fr";
-$EXT_ENV_PATH = ROOT . "/env/.ext/";
-$CPN_ENV_PATH = ROOT . "/components/.ext/";
+define('OPHOSE_URL', "https://ophose.ah4.fr");
+define('EXT_ENV_PATH', ROOT . "/env/.ext/");
+define('CPN_ENV_PATH', ROOT . "/components/.ext/");
+
+$stats = [
+    "installed" => 0,
+    "failed" => 0,
+    "re-installed" => 0
+];
 
 foreach($dependencies as $name=>$version) {
     $infos = explode("/",$name);
+
+    // Check if the dependency name is valid
     if(count($infos) !== 2) {
         echo "Invalid dependency name: " . $name . "\n";
+        $stats["failed"]++;
         continue;
     }
 
+    // Define the author and the resource
     $author = $infos[0];
     $resource = $infos[1];
 
-    $url = $OPHOSE_URL . "/@/resource/fetch/" . $author . "/" . $resource . "/" . $version;
-
+    // Fetch
+    $url = OPHOSE_URL . "/@/resource/fetch/" . $author . "/" . $resource . "/" . $version;
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -30,9 +40,11 @@ foreach($dependencies as $name=>$version) {
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
+    // Check if the request was successful
     if($status !== 200) {
         echo "Failed to install " . $name . " with version " . $version . ". Status: " . $status . "\n";
         echo "Message: " . $response . "\n";
+        $stats["failed"]++;
         continue;
     }
 
@@ -45,9 +57,9 @@ foreach($dependencies as $name=>$version) {
     if ($zip->open($path) === TRUE) {
         $env_path = $author . DIRECTORY_SEPARATOR . $name;
         if($response["type"] === "Component") {
-            $env_path = $CPN_ENV_PATH . $env_path;
+            $env_path = CPN_ENV_PATH . $env_path;
         } else {
-            $env_path = $EXT_ENV_PATH . $env_path;
+            $env_path = EXT_ENV_PATH . $env_path;
         }
         if(!file_exists($env_path)) {
             mkdir($env_path, 0777, true);
@@ -57,11 +69,16 @@ foreach($dependencies as $name=>$version) {
             unlink($path);
             if($response["type"] === "Environment") {
                 $env = Env::getEnvironment($env_path);
+                if(!$env) continue;
                 try {
+                    echo "Running installation...\n";
                     $env->onInstall();
-                } catch(Exception $e) {
+                    echo "Re-installed " . $name . " with version " . $version . ".\n";
+                    $stats["re-installed"]++;
+                } catch(Error $e) {
                     echo "Failed to install " . $name . " with version " . $version . ".\n";
                     echo $e->getMessage() . "\n";
+                    $stats["failed"]++;
                 }
             }
             continue;
@@ -70,6 +87,7 @@ foreach($dependencies as $name=>$version) {
         $zip->close();
         unlink($path);
         echo "Dependency " . $author . ":" . $name . " with version " . $version . " installed.\n";
+        $stats["installed"]++;
         $shouldInstall = true;
 
         if($response["type"] === "Environment") {
@@ -91,9 +109,12 @@ foreach($dependencies as $name=>$version) {
             if($env && $shouldInstall) {
                 try {
                     $env->onInstall();
-                } catch(Exception $e) {
+                    echo "Installed " . $name . " with version " . $version . ".\n";
+                    $stats["installed"]++;
+                } catch(Error $e) {
                     echo "Failed to install " . $name . " with version " . $version . ".\n";
                     echo $e->getMessage() . "\n";
+                    $stats["failed"]++;
                 }
             }else{
                 if(!$shouldInstall) {
@@ -104,7 +125,11 @@ foreach($dependencies as $name=>$version) {
     } else {
         echo json_encode($response, JSON_PRETTY_PRINT) . "\n";
         echo "Failed to extract " . $name . " with version " . $version . ".\n";
+        $stats["failed"]++;
     }
 }
 
-echo "Dependencies installed.\n";
+echo "Installation finished.\n";
+echo "Installed: " . $stats["installed"] . "\n";
+echo "Re-installed: " . $stats["re-installed"] . "\n";
+echo "Failed: " . $stats["failed"] . "\n";
