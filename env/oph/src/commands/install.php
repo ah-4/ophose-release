@@ -55,6 +55,15 @@ foreach($dependencies as $name=>$version) {
             echo "Dependency " . $author . ":" . $name . " already exists.\n";
             $zip->close();
             unlink($path);
+            if($response["type"] === "Environment") {
+                $env = Env::getEnvironment($env_path);
+                try {
+                    $env->onInstall();
+                } catch(Exception $e) {
+                    echo "Failed to install " . $name . " with version " . $version . ".\n";
+                    echo $e->getMessage() . "\n";
+                }
+            }
             continue;
         }
         $zip->extractTo($env_path);
