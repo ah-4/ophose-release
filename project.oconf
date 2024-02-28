@@ -1,0 +1,16 @@
+{
+    "name": "Your Ophose Project",
+    "production_mode": false,
+    "api_key": "YOUR_API_KEY",
+    "project_id": "your_project_id",
+    "build": {
+        "redirect": {
+            "force_https_redirect": false
+        }
+    },
+    "dependencies": {
+        "ah4/database": "latest",
+        "ah4/storage": "latest",
+        "ah4/starter": "latest"
+    }
+}
