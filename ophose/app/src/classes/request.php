@@ -58,4 +58,24 @@ class Request {
         return (empty($_SERVER['HTTPS']) ? 'http' : 'https') . '://' . $_SERVER['HTTP_HOST'];
     }
 
+    /**
+     * Returns the request body
+     */
+    public static function getBody() : string {
+        return file_get_contents('php://input');
+    }
+
+    /**
+     * Returns the request body as JSON if the content type is 'application/json', $default otherwise
+     * 
+     * @param array $default The default value to return if the content type is not 'application/json'
+     * @return array|null The request body as JSON if the content type is 'application/json', $default otherwise
+     */
+    public static function json(array $default = []) : array|null {
+        if($_SERVER['CONTENT_TYPE'] === 'application/json') {
+            return json_decode(file_get_contents('php://input'), true);
+        }
+        return $default;
+    }
+
 }

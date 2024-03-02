@@ -9,7 +9,7 @@ class ___env___ {
      * @param {string} endpoint the environment and its endpoint (for example: /myEnv/myEndpoint)
      * @param {Array} data post data
      */
-    static async post(endpoint, data = {}) {
+    static async post(endpoint, data = null) {
 
         let jsonResult = null;
         let error = false;
@@ -17,15 +17,17 @@ class ___env___ {
             method: 'POST',
             headers: {},
             useDirectives: true,
-            ...data.options ?? {}
+            ...(data && data.options) ?? {}
         }
-        data.options = undefined;
+        if(data && data.options) data.options = undefined;
         if(!(data instanceof FormData)) {
-            let formData = new FormData();
-            for(let key in data) {
-                formData.append(key, data[key]);
+            if(data instanceof Object) {
+                options.headers['Content-Type'] = 'application/json';
+                data = JSON.stringify(data);
+            } else if(typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean' || data === null) {
+                if(data === null) data = '';
+                options.headers['Content-Type'] = 'text/plain';
             }
-            data = formData;
         }
 
         await $.ajax({
