@@ -20,6 +20,13 @@ class ___env___ {
             ...(data && data.options) ?? {}
         }
         if(data && data.options) data.options = undefined;
+        if(options.toFormData) {
+            let formData = new FormData();
+            for(let key in data) {
+                formData.append(key, data[key]);
+            }
+            data = formData;
+        }
         if(!(data instanceof FormData)) {
             if(data instanceof Object) {
                 options.headers['Content-Type'] = 'application/json';
