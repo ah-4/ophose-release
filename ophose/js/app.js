@@ -19,6 +19,7 @@ class ___app___ {
     static __loadBase() {
         if (___app___.__base) return;
         // Loading Base
+        ___app___.__init();
         ___app___.__base = new Base({
             children: {
                 _: 'main',
@@ -216,7 +217,7 @@ class ___app___ {
      * @param {string} newIcon the new icon
      */
     static setIcon(newIcon) {
-        document.getElementById('favicon').href = newIcon;
+        if(document.getElementById('favicon')) document.getElementById('favicon').href = newIcon;
     }
 
     /**
