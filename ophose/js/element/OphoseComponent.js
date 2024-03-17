@@ -252,6 +252,24 @@ class ___component___ extends ___element___ {
         ___component___.__allComponents[this.__componentUniqueId] = undefined;
     }
 
+    // Relatives
+
+    /**
+     * Returns the first parent component of the given type
+     * @param {*} componentType the component type
+     * @returns {Ophose.Component} the component or null if not found
+     */
+    findFirstParentComponentOfType(componentType) {
+        let parent = this.__node.parentElement;
+        while(parent) {
+            if(parent.ophoseInstance && parent.ophoseInstance instanceof componentType) {
+                return parent.ophoseInstance;
+            }
+            parent = parent.parentElement;
+        }
+        return null;
+    }
+
     // Lifecycle
 
     /**

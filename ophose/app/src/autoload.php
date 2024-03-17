@@ -8,15 +8,19 @@ define('OPHOSE_APP_PATH', OPHOSE_PATH . "app/");
 include_once(__DIR__ . '/util/file_util.php');
 include_once(__DIR__ . '/util/config_util.php');
 include_once(__DIR__ . '/util/str_util.php');
+include_once(__DIR__ . '/util/app_util.php');
 include_once(__DIR__ . '/util/array_util.php');
+include_once(__DIR__ . '/util/numeric_util.php');
 
 include_once(__DIR__ . '/classes/env_class.php');
 include_once(__DIR__ . '/classes/request.php');
 include_once(__DIR__ . '/classes/response/directive.php');
 include_once(__DIR__ . '/classes/response.php');
 include_once(__DIR__ . '/classes/session.php');
+include_once(__DIR__ . '/classes/cookie.php');
 include_once(__DIR__ . '/classes/with.php');
 include_once(__DIR__ . '/classes/cmd_class.php');
+include_once(__DIR__ . '/classes/resource/template.php');
 
 session_start();
 

@@ -47,7 +47,7 @@ class Response {
     public static function file(string $filePath, int $status = 200) {
         $response = new Response();
         if(!file_exists($filePath) || is_dir($filePath)) {
-            $response->setBody("File not found: " . $filePath);
+            $response->setBody("File not found");
             $response->setStatus(404);
             $response->send();
         }

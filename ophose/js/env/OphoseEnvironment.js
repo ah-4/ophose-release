@@ -13,6 +13,7 @@ class ___env___ {
 
         let jsonResult = null;
         let error = false;
+        if(data instanceof Live) data = data.get();
         let options = {
             method: 'POST',
             headers: {},
@@ -28,9 +29,9 @@ class ___env___ {
             data = formData;
         }
         if(!(data instanceof FormData)) {
-            if(data instanceof Object) {
+            if(typeof data === 'object') {
                 options.headers['Content-Type'] = 'application/json';
-                data = JSON.stringify(data);
+                data = JSON.stringify(Live.flatten(data));
             } else if(typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean' || data === null) {
                 if(data === null) data = '';
                 options.headers['Content-Type'] = 'text/plain';

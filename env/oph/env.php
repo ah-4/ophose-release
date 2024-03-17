@@ -19,6 +19,10 @@ return new class extends Env {
         $this->command('install', function () {
             include_once __DIR__ . '/src/commands/install.php';
         });
+
+        $this->command('trigger', function () {
+            include_once __DIR__ . '/src/commands/trigger.php';
+        });
     }
 
 };

@@ -147,6 +147,25 @@ class Live {
     
         return live;
     }
+
+    /**
+     * Flattens an object with lives (replaces lives with their values recursively)
+     * @param {*} obj the object
+     * @returns the flattened object
+     */
+    static flatten(obj) {
+        obj = Object.assign({}, obj);
+        for (let key in obj) {
+            if (obj[key] instanceof Live) {
+                obj[key] = obj[key].get();
+            }
+        
+            if (typeof obj[key] === 'object') {
+                obj[key] = Live.flatten(obj[key]);
+            }
+        }
+        return obj;   
+    }
     
 }
 

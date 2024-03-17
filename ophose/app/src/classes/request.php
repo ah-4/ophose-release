@@ -8,10 +8,11 @@ class Request {
      * Returns the value of a $_GET variable if it exists, null otherwise
      *
      * @param string $key The key to look for in the $_GET array
-     * @return mixed|null The value of the $_GET variable if it exists, null otherwise
+     * @param mixed $default The default value to return if the $_GET variable does not exist
+     * @return mixed|null The value of the $_GET variable if it exists, the default value otherwise
      */
-    public static function query(string $key) {
-        return $_GET[$key] ?? null;
+    public static function query(string $key, $default = null) {
+        return $_GET[$key] ?? $default;
     }
 
     /**
@@ -72,7 +73,7 @@ class Request {
      * @return array|null The request body as JSON if the content type is 'application/json', $default otherwise
      */
     public static function json(array $default = []) : array|null {
-        if($_SERVER['CONTENT_TYPE'] === 'application/json') {
+        if(($_SERVER['CONTENT_TYPE'] ?? null) === 'application/json') {
             return json_decode(file_get_contents('php://input'), true);
         }
         return $default;
