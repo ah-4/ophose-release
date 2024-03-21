@@ -21,6 +21,7 @@ include_once(__DIR__ . '/classes/cookie.php');
 include_once(__DIR__ . '/classes/with.php');
 include_once(__DIR__ . '/classes/cmd_class.php');
 include_once(__DIR__ . '/classes/resource/template.php');
+include_once(__DIR__ . '/classes/numeric/duration.php');
 
 session_start();
 

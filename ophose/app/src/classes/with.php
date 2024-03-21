@@ -22,6 +22,13 @@ class With {
     private array $arguments;
 
     /**
+     * Stores the otherwise callback (default callback if the condition is false)
+     *
+     * @var callable
+     */
+    private $otherwiseCallback;
+
+    /**
      * Stores the fail callback
      *
      * @var callable
@@ -64,6 +71,17 @@ class With {
      * @return With the current instance
      */
     public function otherwise(callable $callback) : With {
+        $this->otherwiseCallback = $callback;
+        return $this;
+    }
+
+    /**
+     * Goes to the callback if the condition is false
+     *
+     * @param callable $callback the callback to go to
+     * @return With the current instance
+     */
+    public function fail(callable $callback) {
         $this->failCallback = $callback;
         return $this;
     }
@@ -78,8 +96,14 @@ class With {
         if($this->condition) {
             $callback(...$this->arguments);
         } else {
-            $callback = $this->failCallback;
-            $callback();
+            if($this->failCallback) {
+                $failCallback = $this->failCallback;
+                $failCallback(...$this->arguments);
+            }
+            if($this->otherwiseCallback) {
+                $otherwiseCallback = $this->otherwiseCallback;
+                $otherwiseCallback(...$this->arguments);
+            }
         }
     }
 
