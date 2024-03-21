@@ -84,36 +84,20 @@ class Duration {
      * @return string The string representation of the duration.
      */
     public function __toString(): string {
-        $years = $this->getYears();
-        $months = $this->getMonths();
-        $weeks = $this->getWeeks();
-        $days = $this->getDays();
-        $hours = $this->getHours();
-        $minutes = $this->getMinutes();
         $seconds = $this->seconds;
-        $string = '';
-        if($years > 0) {
-            $string .= $years . ' year' . ($years > 1 ? 's' : '') . ' ';
-        }
-        if($months > 0) {
-            $string .= $months . ' month' . ($months > 1 ? 's' : '') . ' ';
-        }
-        if($weeks > 0) {
-            $string .= $weeks . ' week' . ($weeks > 1 ? 's' : '') . ' ';
-        }
-        if($days > 0) {
-            $string .= $days . ' day' . ($days > 1 ? 's' : '') . ' ';
-        }
-        if($hours > 0) {
-            $string .= $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ';
-        }
-        if($minutes > 0) {
-            $string .= $minutes . ' minute' . ($minutes > 1 ? 's' : '') . ' ';
-        }
-        if($seconds > 0) {
-            $string .= $seconds . ' second' . ($seconds > 1 ? 's' : '') . ' ';
-        }
-        return trim($string);
+        $years = floor($seconds / 31536000);
+        $seconds -= $years * 31536000;
+        $months = floor($seconds / 2628000);
+        $seconds -= $months * 2628000;
+        $weeks = floor($seconds / 604800);
+        $seconds -= $weeks * 604800;
+        $days = floor($seconds / 86400);
+        $seconds -= $days * 86400;
+        $hours = floor($seconds / 3600);
+        $seconds -= $hours * 3600;
+        $minutes = floor($seconds / 60);
+        $seconds -= $minutes * 60;
+        return ($years > 0 ? $years . "y " : "") . ($months > 0 ? $months . "m " : "") . ($weeks > 0 ? $weeks . "w " : "") . ($days > 0 ? $days . "d " : "") . ($hours > 0 ? $hours . "h " : "") . ($minutes > 0 ? $minutes . "m " : "") . ($seconds > 0 ? $seconds . "s " : "");
     }
 
     /**
