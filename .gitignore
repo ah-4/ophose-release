@@ -1,10 +1,9 @@
 /backup/
 /build/
 *.oconf.local
-/.htaccess
 /private/
-/project.oconf
 /public/app.js
 /public/ophose.js
 /env/.ext/
 /components/.ext/
+/.vscode

@@ -41,7 +41,7 @@ class YourComponent extends Ophose.Component {
         return _('div',
             _('h1', 'Hello, World!'),
             _('p', 'This is a simple example of using Ophose.'),
-            _('button', { onClick: this.handleClick }, 'Click me')
+            _('button', { onclick: this.handleClick }, 'Click me')
         ),
     }
 }

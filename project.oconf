@@ -12,6 +12,7 @@
         "ah4/database": "latest",
         "ah4/storage": "latest",
         "ah4/starter": "latest",
-        "ah4/auth": "latest"
+        "ah4/mail": "latest",
+        "ah4/auth": "latest",
     }
 }
