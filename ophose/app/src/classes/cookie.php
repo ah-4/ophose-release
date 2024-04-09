@@ -33,7 +33,7 @@ class Cookie {
         * @param bool $httponly The httponly flag
         * @return void
         */
-        public static function set(string $key, mixed $value, int $expire = 3600, string $path = "/", string $domain = "", bool $secure = true, bool $httponly = false) {
+        public static function set(string $key, mixed $value, int $expire = 3600, string $path = "/", string $domain = "", bool $secure = true, bool $httponly = true) {
             $key = self::getKey($key);
             setcookie($key, $value, time() + $expire, $path, $domain, $secure, $httponly);
         }
@@ -79,17 +79,6 @@ class Cookie {
         */
         public static function all() {
             return $_COOKIE;
-        }
-    
-        /**
-        * Get all cookie variables
-        *
-        * @return array all cookie variables
-        */
-        public static function clearAll() {
-            foreach ($_COOKIE as $key => $value) {
-                setcookie($key, "", time() - 3600, "/");
-            }
         }
 
 }

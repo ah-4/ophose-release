@@ -16,6 +16,7 @@ class Session {
      * @return mixed the session value or default if not found
      */
     public static function get(string $key, mixed $default = null) {
+        if(!isset($_SESSION)) session_start();
         $key = self::getKey($key);
         if (isset($_SESSION[$key])) return $_SESSION[$key];
         return $default;
@@ -29,6 +30,7 @@ class Session {
      * @return void
      */
     public static function set(string $key, mixed $value) {
+        if(!isset($_SESSION)) session_start();
         $key = self::getKey($key);
         $_SESSION[$key] = $value;
     }
@@ -40,6 +42,7 @@ class Session {
      * @return void
      */
     public static function delete(string $key) {
+        if(!isset($_SESSION)) session_start();
         $key = self::getKey($key);
         unset($_SESSION[$key]);
     }
@@ -50,6 +53,7 @@ class Session {
      * @return void
      */
     public static function clear() {
+        if(!isset($_SESSION)) session_start();
         session_unset();
     }
 
@@ -60,6 +64,7 @@ class Session {
      * @return boolean true if the session variable exists
      */
     public static function exists(string $key) : bool {
+        if(!isset($_SESSION)) session_start();
         $key = self::getKey($key);
         return isset($_SESSION[$key]);
     }

@@ -94,7 +94,7 @@ class Env
 
         // Check CSRF Token if required
         $requestCSRFToken = getallheaders()["X-CSRF-Token"] ?? null;
-        if ($envEndpoint["csrf"] && ($requestCSRFToken == null || $requestCSRFToken !== $_SESSION["CSRF_TOKEN"])) {
+        if ($envEndpoint["csrf"] && ($requestCSRFToken == null || $requestCSRFToken !== Cookie::get("CSRF_TOKEN"))) {
             Response::json(["error" => "CSRF Token not valid."], 403);
         }
 

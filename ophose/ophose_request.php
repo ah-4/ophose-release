@@ -1,4 +1,7 @@
 <?php
+
+use Ophose\Cookie;
+
 include_once(__DIR__ . "/app/request/security.php");
 ?>
 <html>
@@ -21,7 +24,7 @@ include_once(__DIR__ . "/app/request/security.php");
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="UTF-8">
-        <meta name="csrf-token" content="<?php echo $_SESSION['CSRF_TOKEN']; ?>">
+        <meta name="csrf-token" content="<?php echo CSRF_TOKEN; ?>">
 
         <script>
         window.addEventListener("load", () => {

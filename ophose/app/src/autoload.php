@@ -23,8 +23,6 @@ include_once(__DIR__ . '/classes/cmd_class.php');
 include_once(__DIR__ . '/classes/resource/template.php');
 include_once(__DIR__ . '/classes/numeric/duration.php');
 
-session_start();
-
 use Ophose\Configuration;
 
 define('CONFIG', Configuration::get(ROOT . 'project.oconf'));
