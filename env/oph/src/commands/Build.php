@@ -59,6 +59,8 @@ class BuildFile {
         $this->content = preg_replace('/(\}|\]|\)|\;|\,|\{)\s*[\r\n]\s*(\}|\]|\)|\;|\,|\{)/m', "$1$2", $this->content);
         $this->content = preg_replace('/(\;|\,|\{|\[)\s*[\r\n]\s*/m', "$1", $this->content);
         $this->content = preg_replace('/\;+/', ";", $this->content);
+        // Add a space after each ('}' + any character)
+        $this->content = preg_replace('/\}(?![\s\)])/', "}\n", $this->content);
     }
 
     private function getRequiredFilesThenRemove(string $importFunction, string $path) {

@@ -47,7 +47,7 @@ class ___env___ {
             contentType: false,
             beforeSend: (xhr) => {
                 let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                xhr.setRequestHeader('X-CSRF-Token', token);
+                xhr.setRequestHeader('X-Csrf-Token', token);
                 for(let header in options.headers) {
                     xhr.setRequestHeader(header, options.headers[header]);
                 }

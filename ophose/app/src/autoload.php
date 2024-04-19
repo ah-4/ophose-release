@@ -11,6 +11,7 @@ include_once(__DIR__ . '/util/str_util.php');
 include_once(__DIR__ . '/util/app_util.php');
 include_once(__DIR__ . '/util/array_util.php');
 include_once(__DIR__ . '/util/numeric_util.php');
+include_once(__DIR__ . '/util/header_util.php');
 
 include_once(__DIR__ . '/classes/env_class.php');
 include_once(__DIR__ . '/classes/request.php');
