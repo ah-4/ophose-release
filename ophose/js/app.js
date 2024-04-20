@@ -19,7 +19,6 @@ class ___app___ {
     static __loadBase() {
         if (___app___.__base) return;
         // Loading Base
-        ___app___.__init();
         ___app___.__base = new Base({
             children: {
                 _: 'main',
@@ -35,16 +34,6 @@ class ___app___ {
         ___app___.__$pageStyle = document.createElement("style");
         document.head.appendChild(___app___.__$pageStyle);
         // Init
-    }
-
-    static __init() {
-        // set favicon
-        let favicon = document.createElement('link');
-        favicon.rel = 'icon';
-        favicon.href = '/favicon.ico';
-        favicon.type = 'image/x-icon';
-        favicon.id = 'favicon';
-        document.head.appendChild(favicon);
     }
 
     /**
@@ -209,15 +198,6 @@ class ___app___ {
      */
     static setTitle(newTitle) {
         document.title = newTitle;
-    }
-
-    /**
-     * Sets application icon
-     * 
-     * @param {string} newIcon the new icon
-     */
-    static setIcon(newIcon) {
-        if(document.getElementById('favicon')) document.getElementById('favicon').href = newIcon;
     }
 
     /**

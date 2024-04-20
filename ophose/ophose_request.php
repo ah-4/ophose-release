@@ -4,11 +4,18 @@ use Ophose\Cookie;
 
 include_once(__DIR__ . "/app/request/security.php");
 ?>
+<!DOCTYPE html>
 <html>
 
     <head>
 
         <script src="/@dep/jquery.js"></script>
+        <script>
+            const project = {
+                name: "<?php echo CONFIG["name"]; ?>",
+                productionMode: <?php echo CONFIG["production_mode"] ? "true" : "false"; ?>,
+            };
+        </script>
         <?php if(CONFIG["production_mode"]) { ?>
             <script src="/ophose.js"></script>
             <script src="/app.js"></script>
