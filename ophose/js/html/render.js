@@ -28,7 +28,7 @@ class ___render___ {
         if(oph === undefined || oph === null || oph === false) return document.createTextNode("");
 
         if(!___render___.isOphoseObject(oph)) {
-            console.error("___render___.toNode: Invalid ophose object.", oph);
+            dev.error("RenderException: Invalid ophose object.", oph);
             return undefined;
         }
 
@@ -65,7 +65,7 @@ class ___render___ {
         };
 
         if (Array.isArray(oph)) {
-            console.error("___render___.toNode: Invalid ophose object.");
+            dev.error("RenderException: Array render without parent is not supported at the moment. Use a parent element or place the array in a children element.");
             return undefined;
         };
 

@@ -1,13 +1,12 @@
 <?php
-
-use Ophose\Cookie;
-
 include_once(__DIR__ . "/app/request/security.php");
 ?>
 <!DOCTYPE html>
 <html>
 
     <head>
+
+        <meta name="csrf-token" content="<?php echo CSRF_TOKEN; ?>">
 
         <script src="/@dep/jquery.js"></script>
         <script>
@@ -31,7 +30,6 @@ include_once(__DIR__ . "/app/request/security.php");
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="UTF-8">
-        <meta name="csrf-token" content="<?php echo CSRF_TOKEN; ?>">
 
         <script>
         window.addEventListener("load", () => {

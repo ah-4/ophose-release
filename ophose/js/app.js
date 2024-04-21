@@ -218,6 +218,15 @@ class ___app___ {
         return e;
     }
 
+    /**
+     * Returns the base component
+     * 
+     * @returns {Base} the base component
+     */
+    static getBase() {
+        return ___app___.__base;
+    }
+
 }
 
 const app = ___app___;

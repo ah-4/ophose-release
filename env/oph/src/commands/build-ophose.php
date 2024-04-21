@@ -21,17 +21,29 @@ $JS_ORDER = [
 
     "ophose.js"
 ];
+
+$dev_includes = [
+    "dev/dev.js"
+];
+
+// Add dev includes
+$JS_ORDER = array_merge($JS_ORDER, $dev_includes);
+
 define('JS_ORDER', $JS_ORDER);
+define('DEV_INCLUDES', $dev_includes);
 
 function compile() {
     $time = time();
     $COMPILED_JS_PATH = ROOT . '/public/ophose.js';
     // Get all required files
     echo "Building Ophose... \n";
+    $js_order = JS_ORDER;
+    $js_order = array_diff($js_order, DEV_INCLUDES);
+
     $required_files = array_map(function($file) {
         $fixed_path = str_replace('\/', DIRECTORY_SEPARATOR, $file);
         return realpath(ROOT . "/ophose/js/" . $fixed_path);
-    }, JS_ORDER);
+    }, $js_order);
 
     $content = "";
     foreach($required_files as $file) {
@@ -42,6 +54,7 @@ function compile() {
         $content .= file_get_contents($file) . ";";
     }
 
+    $content = "const dev = {error:()=>{}};" . $content;
     $content .= ";__OPH_APP_BUILD__=true;";
 
     file_put_contents($COMPILED_JS_PATH, $content);

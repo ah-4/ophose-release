@@ -39,7 +39,7 @@ class ___page___ extends ___component___ {
 
     redirect(url) {
         if (this.__redirected) {
-            console.error("This page has already been redirected.");
+            dev.error("This page has already been redirected.");
             return;
         }
         this.__redirected = url;

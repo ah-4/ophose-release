@@ -63,6 +63,17 @@ class Live {
     }
 
     /**
+     * Updates the value with a callback
+     * @param {function} callback the callback (takes the current value as argument and should return the new value)
+     * @returns the value
+     */
+    update(callback) {
+        let newValue = callback(this.value);
+        this.set(newValue);
+        return newValue;
+    }
+
+    /**
      * Adds a value to the current value
      * @param {*} value the value to add
      */
@@ -187,4 +198,8 @@ class PlacedLive {
 
 Live.prototype.valueOf = function (liveId) {
     return this.get(liveId);
+}
+
+function dyn(...livesAndCallback) {
+    return new PlacedLive(...livesAndCallback);
 }

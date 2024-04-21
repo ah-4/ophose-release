@@ -13,6 +13,11 @@
         "ah4/storage": "latest",
         "ah4/starter": "latest",
         "ah4/mail": "latest",
-        "ah4/auth": "latest"
+        "ah4/auth": "latest",
+        "ah4/seo": "latest",
+        "ah4/lang": "latest"
+    },
+    "ophose": {
+        "version": "1.0.0_c"
     }
 }

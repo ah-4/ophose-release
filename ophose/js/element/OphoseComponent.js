@@ -137,7 +137,7 @@ class ___component___ extends ___element___ {
         if(additionalStyles) {
             for(let screen in additionalStyles) {
                 if(!___component___.__SCREENS_SIZES[screen]) {
-                    console.error('Invalid screen size: ' + screen);
+                    dev.error('Invalid screen size: ' + screen);
                     continue;
                 }
                 let additionalStyle = additionalStyles[screen].replaceAll('%self', '.' + this.__getComponentUniqueId());

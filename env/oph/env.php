@@ -23,6 +23,10 @@ return new class extends Env {
         $this->command('trigger', function () {
             include_once __DIR__ . '/src/commands/trigger.php';
         });
+
+        $this->command('update', function () {
+            include_once __DIR__ . '/src/commands/update.php';
+        });
     }
 
 };
