@@ -19,10 +19,11 @@
 			"\t}",
 			"",
 			"\trender() {",
-			"\t\treturn {_: 'div', children: [",
+			"\t\treturn _('div',",
 			"\t\t\t",
-			"\t\t]}",
+			"\t\t);",
 			"\t}",
+			"",
 			"}",
 		]
 	},
@@ -32,6 +33,14 @@
 		"prefix": ["oic", "ophic"],
 		"body": [
 			"oimpc(\"${0}\");"
+		]
+	},
+
+	"Class Name": {
+		"scope": "javascript",
+		"prefix": ["cn", "ocn", "ophcn"],
+		"body": [
+			"className: \"${0}\""
 		]
 	},
 
@@ -53,9 +62,9 @@
 			"\t}",
 			"",
 			"\trender() {",
-			"\t\treturn {_: 'div', children: [",
+			"\t\treturn _('div',",
 			"\t\t\t",
-			"\t\t]}",
+			"\t\t);",
 			"\t}",
 			"}",
 			"",
@@ -68,7 +77,7 @@
 		"scope": "javascript",
 		"prefix": ["oce", "ophce"],
 		"body": [
-			"oenv(${0:endpoint}, {})"
+			"oenv(${0:endpoint}, {})",
 			".then((response) => {",
 			"\t${2:response}",
 			"}).catch((error) => {",
