@@ -50,6 +50,13 @@ class AutoLoader {
         $classNameInfos = explode('\\', $className);
         $className = end($classNameInfos);
         $envName = implode('/', array_slice($classNameInfos, 0, -1));
+
+        // Check if a file with the same name as the class exists in the same directory
+        $absolutePath = self::getPathIgnoringCase($envName, $className . ".php");
+        if($absolutePath) {
+            include_once $absolutePath;
+            return true;
+        }
         
         $envPath = self::getEnvironmentPath($envName);
         if(!$envPath) return false;
@@ -61,6 +68,7 @@ class AutoLoader {
         if(count($split) > 1 && empty($split[1])) {
             array_pop($split);
         }
+        if(!is_dir($envPath)) return false;
         $envs = scandir($envPath);
         foreach($envs as $env) {
             if(strtolower($env) == strtolower($split[0])) {
