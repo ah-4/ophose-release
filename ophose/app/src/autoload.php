@@ -52,9 +52,9 @@ class AutoLoader {
         $envName = implode('/', array_slice($classNameInfos, 0, -1));
 
         // Check if a file with the same name as the class exists in the same directory
-        $absolutePath = self::getPathIgnoringCase($envName, $className . ".php");
-        if($absolutePath) {
-            include_once $absolutePath;
+        $absolutePath = self::getPathIgnoringCase(ROOT, $envName);
+        if(is_dir($absolutePath) && file_exists($absolutePath . '/' . $className . '.php')) {
+            include_once $absolutePath . '/' . $className . '.php';
             return true;
         }
         
