@@ -230,7 +230,7 @@ class Live {
     
         if(live === undefined) {
             live = new Live(value);
-            live.addCallbackListener((newValue) => {
+            live.subscribe((newValue) => {
                 localStorage.setItem(key, newValue); 
             });
             Live.__localLives[key] = live;

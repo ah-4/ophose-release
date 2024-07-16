@@ -106,8 +106,7 @@ class PageIndex extends Ophose.Page {
             ),
             _('input', {
                 placeholder: 'Type something...',
-                oninput: e => this.input.set(e.target.value),
-                value: this.input.value
+                watch: this.input
             }),
             _('p', {className: 'description'},
                 'Ophose (by ',
