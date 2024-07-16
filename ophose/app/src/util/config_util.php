@@ -38,18 +38,25 @@ class Configuration{
     public function export(string $inConfigPath) {
         $newConfigPath = ROOT . 'app/configuration/' . $inConfigPath . '.oconf';
         if(file_exists($newConfigPath)) return $newConfigPath;
+        if(!file_exists(dirname($newConfigPath))) mkdir(dirname($newConfigPath), 0777, true);
         file_put_contents($newConfigPath, json_encode($this->configurations, JSON_PRETTY_PRINT));
         return $newConfigPath;
     }
 
 }
 
-function configuration(string $configPath) {
+/**
+ * Returns a Configuration object from the specified path. (project.oconf by default)
+ *
+ * @param string|null $configPath the path to the configuration file
+ * @return Configuration|null the Configuration object or null if the file does not exist
+ */
+function configuration(string $configPath = null) {
     // Absolute path
+    if(!$configPath) $configPath = ROOT . 'project.oconf';
     $path = o_realpath($configPath);
     // In configurations folder
     if(!$path) $path = o_realpath(ROOT . 'app/configuration/' . $configPath . '.oconf');
-
     if($path) return new Configuration($path);
     return null;
 }

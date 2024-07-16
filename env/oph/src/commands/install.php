@@ -1,12 +1,13 @@
 <?php
 
-use Ophose\Configuration;
 use Ophose\Env;
+
+use function Ophose\configuration;
 
 $dependencies = CONFIG["dependencies"];
 define('OPHOSE_URL', "https://ophose.ah4.fr");
-define('EXT_ENV_PATH', ROOT . "/env/.ext/");
-define('CPN_ENV_PATH', ROOT . "/components/.ext/");
+define('EXT_ENV_PATH', ROOT . "/env/ext/");
+define('CPN_ENV_PATH', ROOT . "/components/ext/");
 
 $shouldReinstall = COMMAND->hasOption('u');
 
@@ -102,7 +103,7 @@ foreach($dependencies as $name=>$version) {
             $env = Env::getEnvironment($env_path);
             $conf_file = $env_path . "/env.oconf";
             if(file_exists($conf_file)) {
-                $conf = Configuration::get($conf_file);
+                $conf = configuration($conf_file)->get();
                 if($conf && isset($conf["dependencies"]) && is_array($conf["dependencies"])) {
                     foreach($conf["dependencies"] as $dep_name) {
                         $p = AutoLoader::getEnvironmentPath($dep_name);

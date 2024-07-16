@@ -4,7 +4,7 @@ class ___import___ {
     static __lastExport = undefined;
 
     static __fixedPath(path) {
-        if(path.startsWith("@/")) path = path.replace("@/", ".ext/");
+        if(path.startsWith("@/")) path = path.replace("@/", "ext/");
         return path.trim().replaceAll("//", "/");
     }
 

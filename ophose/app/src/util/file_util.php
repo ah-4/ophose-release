@@ -78,6 +78,7 @@ function o_rm_dir_recursive($dir)
 function o_realpath($path) {
     // Remplacer les backslashes par des slashes pour la compatibilité
     $path = str_replace('\\', '/', $path);
+    $path = str_replace('//', '/', $path);
 
     // Séparer le chemin en segments
     $segments = explode('/', $path);

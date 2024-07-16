@@ -41,7 +41,7 @@ class AutoLoader {
         // Local environment path
         if(!$path) $path = o_realpath(ENV_PATH . $namespaces[0] . '/src/' . implode('/', array_slice($namespaces, 1)) . ".php");
         // External environment path
-        if(!$path) $path = o_realpath(ENV_PATH . '.ext/' . $namespaces[0] . '/' . $namespaces[1] . '/src/' . implode('/', array_slice($namespaces, 2)) . ".php");
+        if(!$path) $path = o_realpath(ENV_PATH . 'ext/' . $namespaces[0] . '/' . $namespaces[1] . '/src/' . implode('/', array_slice($namespaces, 2)) . ".php");
 
         if($path) {
             include_once($path);
@@ -54,7 +54,7 @@ class AutoLoader {
         $envPath = str_replace("\\", "/", $envPath);
         $envPath = str_replace(":", "/", $envPath);
         $path = o_realpath(ENV_PATH . $envPath);
-        if(!$path) $path = o_realpath(ENV_PATH . '.ext/' . $envPath);
+        if(!$path) $path = o_realpath(ENV_PATH . 'ext/' . $envPath);
         if($path) return (file_exists($path . '/src') || file_exists($path . '/env.php') || file_exists($path . '/env.oconf')) ? $path : false;
         return $path;
     }
