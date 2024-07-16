@@ -46,6 +46,7 @@ class ___import___ {
     static importCss(path) {
         let link = document.createElement("link");
         link.rel = "stylesheet";
+        link.type = "text/css";
         link.href = path;
         document.head.appendChild(link);
     }

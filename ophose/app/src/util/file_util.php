@@ -69,3 +69,53 @@ function o_rm_dir_recursive($dir)
     rmdir($dir);
     return true;
 }
+
+/**
+ * Returns the real path of the given path ignoring case sensitivity
+ * @param string $path the path
+ * @return string|false the realpath or false if the path does not exist
+ */
+function o_realpath($path) {
+    // Remplacer les backslashes par des slashes pour la compatibilité
+    $path = str_replace('\\', '/', $path);
+
+    // Séparer le chemin en segments
+    $segments = explode('/', $path);
+
+    // Si le premier segment est vide, c'est un chemin absolu (Unix-like)
+    if (empty($segments[0])) {
+        $currentPath = '/';
+        array_shift($segments);
+    } else {
+        // Chemin relatif ou absolu Windows
+        if (preg_match('/^[a-zA-Z]:$/', $segments[0])) {
+            // C'est un chemin absolu Windows (comme C:)
+            $currentPath = $segments[0];
+            array_shift($segments);
+        } else {
+            $currentPath = '';
+        }
+    }
+
+    foreach ($segments as $segment) {
+        // Lister les fichiers et dossiers dans le chemin courant
+        $found = false;
+        $directory = $currentPath ? $currentPath : '.';
+        $files = scandir($directory);
+
+        foreach ($files as $file) {
+            if (strcasecmp($file, $segment) === 0) {
+                $currentPath = $currentPath ? $currentPath . '/' . $file : $file;
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            return false; // Si le segment n'est pas trouvé, retourner false
+        }
+    }
+
+    // Utiliser realpath pour obtenir le chemin canonique
+    return realpath($currentPath);
+}

@@ -2,9 +2,9 @@
 
 namespace Ophose;
 
-use AutoLoader;
 use Ophose\Command;
-use Ophose\Configuration;
+use ReflectionFunction;
+use ReflectionMethod;
 
 class Env
 {
@@ -48,7 +48,7 @@ class Env
      */
     protected function getConfiguration() {
         if($this->envPath == null) return null;
-        return Configuration::get($this->envPath . '/env.oconf');
+        return configuration($this->envPath . '/env.oconf');
     }
 
     protected final function getEndpoint(string $endpoint) {
@@ -116,7 +116,53 @@ class Env
         // Run callback
         $params = $envEndpoint["params"] ?? [];
         $callback = $envEndpoint["callback"];
+        if(is_array($callback)) {
+            $class = $callback[0];
+            if(class_exists($class)) {
+                $callback = [new $class(), $callback[1]];
+            }
+        }
+        $params = $this->processAutofrom($callback, $params);
+        $this->processAttributes($callback, $params);
         call_user_func_array($callback, $params);
+    }
+
+    private function getReflection(array|string $callback) : ReflectionMethod|ReflectionFunction {
+        if(is_array($callback)) {
+            $class = $callback[0];
+            $method = $callback[1];
+            return new ReflectionMethod($class, $method);
+        }
+        return new ReflectionFunction($callback);
+    }
+
+    private function processAutofrom($callback, $params) {
+        $reflection = $this->getReflection($callback);
+        $parameters = $reflection->getParameters();
+        $newParams = [];
+        for($i = 0; $i < count($parameters); $i++) {
+            $parameter = $parameters[$i];
+            $type = $parameter->getType();
+            if($type && class_exists($type->getName())) {
+                if(is_callable($type->getName() . "::autofrom")) {
+                    $newParams[] = $type->getName()::autofrom($params[$i]);
+                } else {
+                    $newParams[] = $params[$i];
+                }
+            } else {
+                $newParams[] = $params[$i];
+            }
+        }
+        return $newParams;
+    }
+
+    private function processAttributes($callback, $params) {
+        $reflection = $this->getReflection($callback);
+        $attributes = $reflection->getAttributes();
+        foreach($attributes as $attribute) {
+            $attribute = new ($attribute->getName())(...$params);
+        }
+        return $params;
     }
 
     public final function runCommand(Command $command) {
@@ -162,7 +208,7 @@ class Env
      */
     protected final function endpoint(
         string $endpoint,
-        callable $callback,
+        array|string|callable $callback,
         bool $csrf = false,
         array $methods = [],
         array $required = []

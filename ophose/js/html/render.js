@@ -28,7 +28,8 @@ class ___render___ {
         if(oph === undefined || oph === null || oph === false) return document.createTextNode("");
 
         if(!___render___.isOphoseObject(oph)) {
-            dev.error("RenderException: Invalid ophose object.", oph);
+            dev.error("RenderException: Invalid ophose object:");
+            console.log(oph);
             return undefined;
         }
 
@@ -65,14 +66,22 @@ class ___render___ {
         };
 
         if (Array.isArray(oph)) {
-            dev.error("RenderException: Array render without parent is not supported at the moment. Use a parent element or place the array in a children element.");
-            return undefined;
+            if(oph.length == 0) return ___render___.toNode(undefined, shouldBePlaced);
+            let fragment = document.createDocumentFragment();
+            let oList = [];
+            for (let child of oph) {
+                let childNode = ___render___.toNode(child, shouldBePlaced);
+                fragment.appendChild(childNode);
+                if(childNode) oList.push(childNode);
+            }
+            fragment.oList = oList;
+            return fragment;
         };
 
         if(oph instanceof Node) {
             return oph;
         }
-
+        
         // Case: oph is a string
         if(typeof oph == "string" || typeof oph == "number") {
             return document.createTextNode(oph);
@@ -126,9 +135,28 @@ class ___render___ {
         }
 
         // Case Default: oph is a dict
-        if (typeof oph == "object") { 
+        if (typeof oph == "object") {
+            if (___base___.registered[oph._]) {
+                let copyOph = {...oph};
+                let clsComponent = ___base___.registered[oph._];
+                delete copyOph._;
+                let component = new clsComponent(copyOph);
+                return ___render___.toNode(component, shouldBePlaced);
+            }
             let ophNode = document.createElement(oph._);
             if(oph.c) oph.children = oph.c;
+            if(oph.watch) {
+                ophNode.value = oph.watch.get();
+                oph.watch.subscribe(() => {
+                    ophNode.value = oph.watch.get();
+                });
+                ophNode.addEventListener("input", (e) => {
+                    oph.watch.set(ophNode.value);
+                });
+                ophNode.addEventListener("change", (e) => {
+                    oph.watch.set(ophNode.value);
+                });
+            }
             if (oph.children) {
                 if(Array.isArray(oph.children)){
                     for (let child of oph.children) {

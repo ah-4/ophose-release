@@ -51,7 +51,10 @@ class Response {
             $response->setStatus(404);
             $response->send();
         }
+        $response->setHeader("Content-Length", filesize($filePath));
         $response->setHeader("Content-Type", mime_content_type($filePath));
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+        if($extension === "css") $response->setHeader("Content-Type", "text/css");
         $response->setBody(file_get_contents($filePath));
         $response->setStatus($status);
         $response->send();

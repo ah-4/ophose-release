@@ -183,7 +183,15 @@ class ___component___ extends ___element___ {
      */
     __place(node = undefined) {
 
-        node.classList.add(this.__getComponentUniqueId());
+        if(node instanceof DocumentFragment) {
+            for(let n of node.oList) {
+                n.classList.add(this.__getComponentUniqueId());
+                n.ophoseInstance = this;
+            }
+        }else{
+            node.classList.add(this.__getComponentUniqueId());
+        }
+
 
         node.ophoseInstance = this;
         this.__setNode(node);

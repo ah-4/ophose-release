@@ -41,6 +41,29 @@ class Request {
         return null;
     }
 
+    public static function input(string $key, $default = null, $inputOrder = ['get', 'post', 'json', 'file']) {
+        foreach($inputOrder as $input) {
+            switch($input) {
+                case 'get':
+                    $value = self::query($key);
+                    break;
+                case 'post':
+                    $value = self::post($key);
+                    break;
+                case 'json':
+                    $value = self::json($key) ?? null;
+                    break;
+                case 'file':
+                    $value = self::file($key);
+                    break;
+                default:
+                    $value = null;
+            }
+            if($value !== null) return $value;
+        }
+        return $default;
+    }
+
     /**
      * Returns the request method (GET, POST, PUT, DELETE, etc.)
      *
@@ -72,9 +95,15 @@ class Request {
      * @param array $default The default value to return if the content type is not 'application/json'
      * @return array|null The request body as JSON if the content type is 'application/json', $default otherwise
      */
-    public static function json(array $default = []) : array|null {
-        if(($_SERVER['CONTENT_TYPE'] ?? null) === 'application/json') {
-            return json_decode(file_get_contents('php://input'), true);
+    public static function json(string $key = null, mixed $default = null) {
+        if($_SERVER['CONTENT_TYPE'] ?? null == 'application/json' && $key !== null) {
+            $keys = explode('.', $key);
+            $body = json_decode(self::getBody(), true);
+            foreach ($keys as $key) {
+                if (!isset($body[$key])) return $default;
+                $body = $body[$key];
+            }
+            return $body;
         }
         return $default;
     }
