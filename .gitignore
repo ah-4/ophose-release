@@ -4,6 +4,6 @@
 /private/
 /public/app.js
 /public/ophose.js
-/env/.ext/
-/components/.ext/
+/env/ext/
+/components/ext/
 /.vscode

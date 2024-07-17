@@ -76,6 +76,9 @@ function o_rm_dir_recursive($dir)
  * @return string|false the realpath or false if the path does not exist
  */
 function o_realpath($path) {
+
+    if(file_exists($path)) return realpath($path);
+
     // Remplacer les backslashes par des slashes pour la compatibilité
     $path = str_replace('\\', '/', $path);
     $path = str_replace('//', '/', $path);
