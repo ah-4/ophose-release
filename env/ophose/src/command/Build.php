@@ -1,6 +1,7 @@
 <?php
 
-namespace Oph;
+namespace Ophose\Command;
+
 use AutoLoader;
 
 class BuildFile {
@@ -24,7 +25,6 @@ class BuildFile {
         $this->requiredJSModules = $this->getRequiredFilesThenRemove("oimpm", "modules");
         $this->requiredJSEnvironments = $this->getRequiredFilesThenRemove("oimpe", "env");
 
-        $this->lockString();
         $this->addUsedFiles();
         $this->minify();
     }
@@ -48,28 +48,13 @@ class BuildFile {
         }
     }
 
-    public function reduce() {
-        // Trim each line
-        $this->content = implode("\n", array_map(function($line) {
-            return trim($line);
-        }, explode("\n", $this->content)));
-        $this->content = preg_replace('/^\s+$/m', '', $this->content);
-        $this->content = preg_replace('/^\s*[\r\n]/m', '', $this->content);
-        $this->content = preg_replace('/(\/\*[\w\'\s\r\n\*]*\*\/)|(\/\/.*)|(\<![\-\-\s\w\>\/]*\>)/m', "", $this->content);
-        $this->content = preg_replace('/(\}|\]|\)|\;|\,|\{)\s*[\r\n]\s*(\}|\]|\)|\;|\,|\{)/m', "$1$2", $this->content);
-        $this->content = preg_replace('/(\;|\,|\{|\[)\s*[\r\n]\s*/m', "$1", $this->content);
-        $this->content = preg_replace('/\;+/', ";", $this->content);
-        // Add a space after each ('}' + any character)
-        $this->content = preg_replace('/\}(?![\s\)])/', "}\n", $this->content);
-    }
-
     private function getRequiredFilesThenRemove(string $importFunction, string $path) {
         $matches = [];
         $original = [];
         preg_match_all('/^' . $importFunction . '\(("|\'|`)(.*)("|\'|`)\)/m', $this->content, $matches);
         $matches = array_map(function($match) use (&$original) {
             $original[] = $match;
-            return str_replace('@/', 'ext/', $match);
+            return str_replace('@/', '.ext/', $match);
         }, $matches[2]);
 
         if($path != "env") {
@@ -282,31 +267,24 @@ class Build {
     // Build JS files per page
     public function buildJSFiles() {
         $time = microtime(true);
-        echo "Building your front application files...\n";
-        echo "Creating build folder...\n";
         $this->createBuildFolder();
-        echo "Listing entry files... (pages and Base component)\n";
         $jsPageFiles = $this->getJSPageFiles();
         $baseFile = $this->getJSBaseFile();
         $entryFiles = array_merge($jsPageFiles, [$baseFile]);
 
         // Add entry files
         foreach($entryFiles as $file) {
-            echo "Using entry file: $file\n";
             $this->useEntryFile($file);
         }
 
         $deps = [];
 
         // Verify and add depedencies
-        echo "Ordering and compiling...";
         foreach($this->getAllFiles() as $file) {
             $this->verify($file->getPath());
             $d = $this->getdependencies($file->getPath());
             $file->setdependencies($d);
             $deps = array_merge($deps, $d);
-            $file->reduce();
-            $file->unlockString();
         }
 
         foreach($this->getJSPageFiles() as $file) {
@@ -320,13 +298,7 @@ class Build {
         $file->sortdependencies();
         $file->minify();
         $content = $file->getFullContent();
-        $buildPath = $this->getBuildFolder() . "/app.js";
-        if(!file_exists(dirname($buildPath))) {
-            mkdir(dirname($buildPath), 0777, true);
-        }
-        file_put_contents($buildPath, $content);
-        echo "Build done in " . round(microtime(true) - $time, 2) . "s\n";
+        return $content;
     }
 
 }
-

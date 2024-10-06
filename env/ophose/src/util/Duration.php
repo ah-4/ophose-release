@@ -1,6 +1,6 @@
 <?php
 
-namespace Ophose;
+namespace Ophose\Util;
 
 class Duration {
 

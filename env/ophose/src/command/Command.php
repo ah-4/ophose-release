@@ -1,16 +1,24 @@
 <?php
 
-namespace Ophose;
+namespace Ophose\Command;
 
 class Command {
 
     /**
      * @var array[string] the arguments
      */
-    private $arguments;
+    private $arguments = [];
 
-    public function __construct(array $arguments = null){
+    public function __construct(array $arguments = []){
         $this->arguments = $arguments;
+        $this->before();
+    }
+
+    /**
+     * Run the command before the command is executed.
+     */
+    public function before() {
+        // Override this method to run code before the command is executed
     }
 
     /**
@@ -20,6 +28,10 @@ class Command {
      */
     public function getArguments() : array{
         return array_slice($this->arguments, 3);
+    }
+
+    public function getAllArguments() : array {
+        return $this->arguments;
     }
 
     /**
@@ -57,7 +69,7 @@ class Command {
 
         if($optionIndex + 1 >= count($this->arguments)) return null;
         $value = $this->arguments[$optionIndex + 1];
-        if($value->startsWith('-') && !is_numeric($value)) return null;
+        if(str_starts_with($value, '-') && !is_numeric($value)) return null;
         return $value;
     }
 
@@ -69,9 +81,9 @@ class Command {
     public function getOptions() : array{
         $options = [];
         foreach($this->arguments as $argument){
-            if($argument->startsWith('--')){
+            if(str_starts_with($argument, '--')){
                 $options[] = $argument->substring(2);
-            } else if($argument->startsWith('-') && !is_numeric($argument)){
+            } else if(str_starts_with($argument, '-') && !is_numeric($argument)){
                 $options[] = $argument->substring(1);
             }
         }
@@ -88,4 +100,12 @@ class Command {
     function hasArgument(string $argumentName, int $argsOffset = 3) : bool {
         return in_array($argumentName, array_slice($this->arguments, $argsOffset));
     }
+
+    /**
+     * Run the command.
+     */
+    public function run() {
+        echo "Command not implemented.\n";
+    }
+    
 }

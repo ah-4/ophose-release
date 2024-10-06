@@ -19,7 +19,7 @@ class Wrapper extends Ophose.Component {
         return {
             md: /* css */`
                 %self {
-                    padding: 0 20px;
+                    padding: 0 1rem;
                     width: 95%;
                 }
             `,
@@ -27,6 +27,8 @@ class Wrapper extends Ophose.Component {
     }
 
     render() {
-        return {_: 'div', children: this.props.children}
+        return _('div',
+            this.props.children
+        )
     }
 }

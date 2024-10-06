@@ -2,12 +2,12 @@
 
 include_once(__DIR__ . '/../src/autoload.php');
 
-use Ophose\Command;
+use Ophose\Command\Command;
 use Ophose\Env;
 
 if($argc < 3) {
     echo "Insufficient arguments...\n";
-    echo "Usage: php ocl <environment> <command> [arguments]\n";
+    echo "Usage: php ocl <[author:]environment> <command> [arguments]\n";
     die(1);
 }
 

@@ -17,15 +17,19 @@ const ophAttrs = ["_name"];
 class ___render___ {
 
     static __placedOphoseInstances = [];
-
+    
     /**
      * Renders an ophose object to a DOM node.
      * @param {*} oph the ophose object to render
      * @returns {Node} the DOM node
      */
-    static toNode(oph, shouldBePlaced = false) {
+    static toNode(oph) {
 
-        if(oph === undefined || oph === null || oph === false) return document.createTextNode("");
+        if(oph === undefined || oph === null || oph === false) {
+            let element = document.createElement('div');
+            element.style.display = 'none';
+            return element;
+        }
 
         if(!___render___.isOphoseObject(oph)) {
             dev.error("RenderException: Invalid ophose object:");
@@ -66,13 +70,22 @@ class ___render___ {
         };
 
         if (Array.isArray(oph)) {
-            if(oph.length == 0) return ___render___.toNode(undefined, shouldBePlaced);
             let fragment = document.createDocumentFragment();
             let oList = [];
-            for (let child of oph) {
-                let childNode = ___render___.toNode(child, shouldBePlaced);
+            if(oph.length == 0) {
+                let childNode = ___render___.toNode(undefined);
+                childNode.fromFragment = fragment;
                 fragment.appendChild(childNode);
-                if(childNode) oList.push(childNode);
+                oList.push(childNode);
+            } else {
+                for (let child of oph) {
+                    let childNode = ___render___.toNode(child);
+                    if(childNode) {
+                        fragment.appendChild(childNode);
+                        oList.push(childNode);
+                        childNode.fromFragment = fragment;
+                    }
+                }
             }
             fragment.oList = oList;
             return fragment;
@@ -93,7 +106,7 @@ class ___render___ {
             if(rendered instanceof PlacedLive) {
                 rendered.selfClassName = oph.__getComponentUniqueId();
             }
-            let node = ___render___.toNode(rendered, shouldBePlaced);
+            let node = ___render___.toNode(rendered);
             let nodeToGiveAttrsAndEvents = node;
             if(oph.__propsOn) {
                 // loop on children to find the input
@@ -107,28 +120,39 @@ class ___render___ {
                 }
             }
             giveAttrsAndEventsToNode(oph.props, nodeToGiveAttrsAndEvents);
-            if (shouldBePlaced) {
-                oph.__place(node);
-                ___render___.__placedOphoseInstances.push(oph);
-                node['o'] = oph;
-            }
+            node.o = oph;
+            oph.__place(node);
             return node;
         }
 
-        // Case: oph is a Live
-        if (oph instanceof Live) { 
-            let textNode = document.createTextNode(oph.get());
-            oph.__placedLiveTextNodes.push(textNode);
-            return textNode;
-        }
-
         // Case: oph is a placed live (with callback so on)
-        if (oph instanceof PlacedLive) {
+        if (oph instanceof PlacedLive || oph instanceof Live) {
+            if(oph instanceof Live) oph = dyn(oph, (value) => value);
             let lives = oph.lives;
             let callback = oph.callback;
+            for(let live of lives) {
+                let subscribeCallback = () => {
+                    let args = lives.map((live) => live.get());
+                    let value = callback(...args);
+                    let newNode = ___render___.toNode(value);
+                    if(oph.node instanceof DocumentFragment) {
+                        let list = oph.node.oList;
+                        for(let i = 1; i < list.length; i++) {
+                            list[i].remove();
+                        }
+                        list[0].replaceWith(newNode);
+                    } else {
+                        oph.node.replaceWith(newNode);
+                    }
+                    oph.node = newNode;
+                    if(!document.contains(newNode) && !(newNode instanceof DocumentFragment)) {
+                        live.unsubscribe(subscribeCallback);
+                    }
+                }
+                live.subscribe(subscribeCallback);
+            }
             let args = lives.map((live) => live.get());
-            let newOph = callback(...args);
-            let node = ___render___.toNode(newOph, shouldBePlaced);
+            let node = ___render___.toNode(callback(...args));
             oph.node = node;
             if(oph.selfClassName) oph.node.classList.add(oph.selfClassName);
             return node;
@@ -141,12 +165,19 @@ class ___render___ {
                 let clsComponent = ___base___.registered[oph._];
                 delete copyOph._;
                 let component = new clsComponent(copyOph);
-                return ___render___.toNode(component, shouldBePlaced);
+                return ___render___.toNode(component);
             }
             let ophNode = document.createElement(oph._);
             if(oph.c) oph.children = oph.c;
             if(oph.watch) {
-                ophNode.value = oph.watch.get();
+                try{
+                    ophNode.value = oph.watch.get();
+                    setTimeout(() => {
+                        ophNode.value = oph.watch.get();
+                    }, 50);
+                }catch(e) {
+                    ;
+                }
                 oph.watch.subscribe(() => {
                     ophNode.value = oph.watch.get();
                 });
@@ -162,20 +193,20 @@ class ___render___ {
                     for (let child of oph.children) {
                         if (Array.isArray(child)) {
                             for (let childChild of child) {
-                                let childNode = ___render___.toNode(childChild, shouldBePlaced);
+                                let childNode = ___render___.toNode(childChild);
                                 if(childNode) {
                                     ophNode.appendChild(childNode);
                                 }
                             }
                             continue;
                         }
-                        let childNode = ___render___.toNode(child, shouldBePlaced);
+                        let childNode = ___render___.toNode(child);
                         if(childNode) {
                             ophNode.appendChild(childNode);
                         }
                     }
                 } else {
-                    let childNode = ___render___.toNode(oph.children, shouldBePlaced);
+                    let childNode = ___render___.toNode(oph.children);
                     if(childNode) {
                         ophNode.appendChild(childNode);
                     }
@@ -190,6 +221,7 @@ class ___render___ {
             if (oph.html || oph.innerHTML) {
                 ophNode.innerHTML = oph.html || oph.innerHTML;
             }
+
             return ophNode;
         }
         return undefined;
@@ -231,3 +263,35 @@ function _(tag, ...propsOrChildren) {
     if(children.length > 0) object.children = children;
     return object;
 }
+
+// Create a new instance of MutationObserver
+const observer = new MutationObserver((mutationsList, observer) => {
+  for (const mutation of mutationsList) {
+    if(mutation.type === 'childList') {
+        for (const node of mutation.addedNodes) {
+            if(node.o) {
+                ___render___.__placedOphoseInstances.push(node.o);
+                node.o.onPlace(node);
+            }
+        }
+    }
+    // On remove
+    if(mutation.removedNodes.length > 0) {
+        for (const node of mutation.removedNodes) {
+            if(node.o) {
+                node.o.__processRemove();
+            }
+        }
+    }
+  }
+});
+
+// Set the configuration for the observer (what changes to observe)
+const config = { childList: true, subtree: true };
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Start observing the target node for configured mutations
+    observer.observe(document.body, config);
+});
+
+const render = ___render___.toNode;

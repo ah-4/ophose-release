@@ -26,7 +26,7 @@ class ___app___ {
             }
         });
         let baseOph = ___app___.__base;
-        let renderedNode = ___render___.toNode(baseOph, true);
+        let renderedNode = ___render___.toNode(baseOph);
         document.body.appendChild(renderedNode);
         ___app___.__$baseAppNode = document.getElementById("oapp");
         ___render___.__placedOphoseInstances = [];
@@ -156,7 +156,7 @@ class ___app___ {
             }
 
             // Load content
-            let pageNode = ___render___.toNode(loadedPage, true);
+            let pageNode = ___render___.toNode(loadedPage);
             loadedPage.onLoad();
 
             ___app___.__$baseAppNode.replaceWith(pageNode);
@@ -166,10 +166,8 @@ class ___app___ {
             ___app___.__pageInstance = loadedPage;
 
             loadedPage.__setNode(pageNode);
-            loadedPage.onPlace(pageNode);
             page = loadedPage;
             scrollToUrlId(100);
-            ___event___.callEvent("onPageLoaded", requestUrl);
         }
 
         if (urlFullPath != "error" && ___app___.__loadedPages[urlRequest]) {

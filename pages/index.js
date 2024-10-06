@@ -4,8 +4,6 @@ class PageIndex extends Ophose.Page {
 
     constructor(urlQueries) {
         super(urlQueries);
-
-        this.input = new Live("AH4");
     }
 
     style() {
@@ -92,9 +90,11 @@ class PageIndex extends Ophose.Page {
     }
 
     render() {
+        let input = live('AH4');
+
         return new Wrapper({children: [
             _('img', {src: '/ophose.png', alt: 'placeholder', draggable: false}),
-            _('h1', 'Welcome ', _('i', this.input), ', to your application'),
+            _('h1', 'Welcome ', _('i', input), ', to your application'),
             _('div', {className: 'links'},
                 _('a', {href: 'https://ophose.ah4.fr/tutorials'}, 'Getting started'),
                 _('a', {href: 'https://ophose.ah4.fr/docs'}, 'Documentation'),
@@ -106,7 +106,7 @@ class PageIndex extends Ophose.Page {
             ),
             _('input', {
                 placeholder: 'Type something...',
-                watch: this.input
+                watch: input
             }),
             _('p', {className: 'description'},
                 'Ophose (by ',

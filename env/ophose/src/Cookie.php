@@ -2,10 +2,12 @@
 
 namespace Ophose;
 
+use function Ophose\Util\configuration;
+
 class Cookie {
         
         private static function getKey($key) {
-            return (isset(CONFIG["project_id"]) ? CONFIG["project_id"] . "_" : "") . $key;
+            return (configuration()->get("project_id") ? configuration()->get("project_id") . "_" : "") . $key;
         }
     
         /**
@@ -81,4 +83,15 @@ class Cookie {
             return $_COOKIE;
         }
 
+}
+
+/**
+ * Get a cookie variable or the default value if not found
+ *
+ * @param string $key The key of the cookie variable
+ * @param mixed $default The default value to return if the cookie variable is not found
+ * @return mixed the cookie variable or the default value if not found
+ */
+function cookie(string $key, mixed $default = null) {
+    return Cookie::get($key, $default);
 }

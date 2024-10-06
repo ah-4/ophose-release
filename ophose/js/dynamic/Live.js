@@ -3,16 +3,44 @@ class Live {
     static __currentReadingStyleComponent = undefined;
     static __calledLives = {};
 
+    __processValue(value, thisArg = this) {
+        if(typeof value === 'object' && value !== null && !Array.isArray(value) && value.constructor === Object) {
+            for(let key in value) {
+                if(thisArg[key] instanceof Live) {
+                    thisArg[key].set(value[key]);
+                } else {
+                    thisArg[key] = new Live(value[key]);
+                }
+            }
+            return;
+        }
+        thisArg.__value = value;
+    }
+
     constructor(value) { 
-        this.value = value;
-        this.__placedLiveTextNodes = [];
-        this.__placedLiveNodes = [];
+        this.__processValue(value);
         this.__placedStyleComponents = [];
+        this.__dynCallbacks = [];
         this.__callbackListeners = [];
         this.__ruleId = '' + Math.random();
         this.__rules = [];
         this.__rulesDependencies = [];
         this.__updateOnlyIfValueChanges = true;
+    }
+
+    /**
+     * Returns the value
+     */
+    get value() {
+        return this.get();
+    }
+
+    /**
+     * Sets the value
+     * @param {*} value the value
+     */
+    set value(value) {
+        this.set(value);
     }
 
     /**
@@ -41,12 +69,12 @@ class Live {
      * @returns the value or undefined if not a boolean
      */
     toggle() {
-        if(typeof this.value != 'boolean') {
-            dev.error('Cannot toggle a non-boolean value', this.value);
+        if(typeof this.__value != 'boolean') {
+            dev.error('Cannot toggle a non-boolean value', this.__value);
             return;
         };
-        this.set(!this.value);
-        return this.value;
+        this.set(!this.__value);
+        return this.__value;
     }
 
     /**
@@ -63,7 +91,8 @@ class Live {
             if(id === this.__ruleId) continue;
             Live.__calledLives[id].push(this);
         }
-        return this.value;
+        if(typeof this.__value === 'object') return Live.flatten(this.__value);
+        return this.__value;
     }
 
     /**
@@ -71,15 +100,15 @@ class Live {
      * @param {*} value the value
      */
     set(value) { 
-        let oldValue = this.value;
-        this.value = value;
+        let oldValue = this.__value;
+        this.__processValue(value);
         for(let rule of this.__rules) {
-            this.value = rule(this.value, oldValue);
+            this.__value = rule(this.__value, oldValue);
         }
         if(this.__updateOnlyIfValueChanges) {
-            if(typeof this.value !== 'object') if(this.value === oldValue) return;
+            if(typeof this.__value !== 'object') if(this.__value === oldValue) return;
         }
-        Live.__onValueChange(this, this.value, oldValue);
+        Live.__onValueChange(this, this.__value, oldValue);
     }
 
     /**
@@ -88,7 +117,7 @@ class Live {
      * @returns the value
      */
     update(callback) {
-        let newValue = callback(this.value);
+        let newValue = callback(this.__value);
         this.set(newValue);
         return newValue;
     }
@@ -101,12 +130,12 @@ class Live {
     rule(callback) {
         this.__rules.push(callback);
         Live.__calledLives[this.__ruleId] = [];
-        callback(this.value, this.value);
+        callback(this.__value, this.__value);
         for(let live of Live.__calledLives[this.__ruleId]) {
             if(this.__rulesDependencies.indexOf(live) === -1) {
                 this.__rulesDependencies.push(live);
                 live.subscribe(() => {
-                    this.set(this.value);
+                    this.set(this.__value);
                 });
             }
         }
@@ -148,12 +177,12 @@ class Live {
      * @param {*} value the value to add
      */
     add(value) {
-        if(Array.isArray(this.value)) {
-            this.value.push(value);
-            this.set(this.value);
+        if(Array.isArray(this.__value)) {
+            this.__value.push(value);
+            this.set(this.__value);
             return;
         }
-        this.set(value + this.value);
+        this.set(value + this.__value);
     }
 
     /**
@@ -161,12 +190,12 @@ class Live {
      * @param {*} value the value to remove
      */
     remove(value) {
-        if(Array.isArray(this.value)) {
-            this.value.splice(this.value.indexOf(value), 1);
-            this.set(this.value);
+        if(Array.isArray(this.__value)) {
+            this.__value.splice(this.__value.indexOf(value), 1);
+            this.set(this.__value);
             return;
         }
-        this.set(this.value - value);
+        this.set(this.__value - value);
     }
     /**
      * Called when value changes and process needed updates
@@ -175,35 +204,8 @@ class Live {
      * @param {*} oldValue the old value
      */
     static __onValueChange(liveVar, newValue, oldValue) {
-        for(let node of liveVar.__placedLiveTextNodes) {
-            node.textContent = newValue;
-        }
-        
-        for(let placedLive of liveVar.__placedLiveNodes) {
-            let args = placedLive.lives.map((live) => live.get());
-            let newNode = ___render___.toNode(placedLive.callback(...args), true);
-            if(placedLive.node instanceof DocumentFragment) {
-                let node = placedLive.node.oList[0];
-                for(let i = 1; i < placedLive.node.oList.length; i++) {
-                    placedLive.node.oList[i].remove();
-                }
-                node.replaceWith(newNode);
-                placedLive.node = newNode;
-                node.remove();
-            } else {
-                placedLive.node.replaceWith(newNode);
-                placedLive.node = newNode;
-            }
-            if(placedLive.selfClassName) placedLive.node.classList.add(placedLive.selfClassName);
-        }
-
-
-        for (let component of liveVar.__placedStyleComponents) {
-            component.___reloadStyle();
-        }
-        for (let callback of liveVar.__callbackListeners) {
-            callback(newValue, oldValue);
-        }
+        for (let callback of liveVar.__callbackListeners) callback(newValue, oldValue);
+        for (let component of liveVar.__placedStyleComponents) component.___reloadStyle();
     }
 
     /**
@@ -245,18 +247,326 @@ class Live {
      * @returns the flattened object
      */
     static flatten(obj) {
-        obj = Object.assign({}, obj);
-        for (let key in obj) {
-            if (obj[key] instanceof Live) {
-                obj[key] = obj[key].get();
-            }
-        
-            if (typeof obj[key] === 'object') {
-                obj[key] = Live.flatten(obj[key]);
-            }
-        }
-        return obj;   
+        return JSON.parse(JSON.stringify(obj, (key, value) => {
+            if(value instanceof Live) return value.get();
+            return value;
+        }));
     }
+
+    // For arrays
+    // #region Array methods
+    /**
+     * Adds values to the array
+     * @param  {...any} values the values
+     * @returns the length of the array
+     */
+    push(...values) {
+        let a = [];
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot push to a non-array value', this.__value);
+            return;
+        }
+        this.set(this.__value.concat(values));
+        return this.__value.length;
+    }
+
+    /**
+     * Removes the last value from the array
+     * @returns the removed value
+     */
+    pop() {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot pop from a non-array value', this.__value);
+            return;
+        }
+        let value = this.__value.pop();
+        this.set(this.__value);
+        return value;
+    }
+
+    /**
+     * Removes the first value from the array
+     * @returns the removed value
+     */
+    shift() {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot shift from a non-array value', this.__value);
+            return;
+        }
+        let value = this.__value.shift();
+        this.set(this.__value);
+        return value;
+    }
+
+    /**
+     * Adds values to the beginning of the array
+     * @param  {...any} values the values
+     * @returns the length of the array
+     */
+    unshift(...values) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot unshift to a non-array value', this.__value);
+            return;
+        }
+        this.set(values.concat(this.__value));
+        return this.__value.length;
+    }
+
+    /**
+     * Removes values from the array
+     * @param {number} index the index
+     * @param {number} howMany the number of values to remove
+     * @returns the removed values
+     */
+    splice(index, howMany) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot splice from a non-array value', this.__value);
+            return;
+        }
+        let removed = this.__value.splice(index, howMany);
+        this.set(this.__value);
+        return removed;
+    }
+
+    /**
+     * Reverses the array
+     */
+    reverse() {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot reverse a non-array value', this.__value);
+            return;
+        }
+        this.set(this.__value.reverse());
+    }
+
+    /**
+     * Sorts the array
+     * @param {function} compareFunction the compare function
+     */
+    sort(compareFunction) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot sort a non-array value', this.__value);
+            return;
+        }
+        this.set(this.__value.sort(compareFunction));
+    }
+
+    /**
+     * Joins the array
+     * @param {string} separator the separator
+     * @returns the joined string
+     */
+    join(separator) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot join a non-array value', this.__value);
+            return;
+        }
+        return this.__value.join(separator);
+    }
+
+    /**
+     * Slices the array
+     * @param {number} start the start index
+     * @param {number} end the end index
+     * @returns the sliced array
+     */
+    slice(start, end) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot slice a non-array value', this.__value);
+            return;
+        }
+        return this.__value.slice(start, end);
+    }
+
+    /**
+     * Filters the array
+     * @param {function} callback the callback
+     * @returns the filtered array
+     */
+    filter(callback) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot filter a non-array value', this.__value);
+            return;
+        }
+        return this.__value.filter(callback);
+    }
+
+    /**
+     * Maps the array
+     * @param {function} callback the callback
+     * @returns the mapped array
+     */
+    map(callback) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot map a non-array value', this.__value);
+            return;
+        }
+        return this.__value.map(callback);
+    }
+
+    /**
+     * Reduces the array
+     * @param {function} callback the callback
+     * @param {*} initialValue the initial value
+     * @returns the reduced value
+     */
+    reduce(callback, initialValue) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot reduce a non-array value', this.__value);
+            return;
+        }
+        return this.__value.reduce(callback, initialValue);
+    }
+
+    /**
+     * Finds the array
+     * @param {function} callback the callback
+     * @returns the found value
+     */
+    find(callback) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot find in a non-array value', this.__value);
+            return;
+        }
+        return this.__value.find(callback);
+    }
+
+    /**
+     * Finds the index in the array
+     * @param {function} callback the callback
+     * @returns the index
+     */
+    findIndex(callback) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot find index in a non-array value', this.__value);
+            return;
+        }
+        return this.__value.findIndex(callback);
+    }
+
+    /**
+     * Returns the length of the array
+     * @returns the length
+     */
+    get length() {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot get length of a non-array value', this.__value);
+            return;
+        }
+        return this.__value.length;
+    }
+
+    /**
+     * Returns the value at an index
+     * @param {number} index the index
+     * @returns the value
+     */
+    at(index) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot get value at index of a non-array value', this.__value);
+            return;
+        }
+        return this.__value[index];
+    }
+
+    /**
+     * Sets the value at an index
+     * @param {number} index the index
+     * @param {*} value the value
+     */
+    setAt(index, value) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot set value at index of a non-array value', this.__value);
+            return;
+        }
+        this.__value[index] = value;
+        this.set(this.__value);
+    }
+
+    /**
+     * Returns the index of a value
+     * @param {*} value the value
+     * @returns the index
+     */
+    indexOf(value) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot get index of a non-array value', this.__value);
+            return;
+        }
+        return this.__value.indexOf(value);
+    }
+
+    /**
+     * Returns the last index of a value
+     * @param {*} value the value
+     * @returns the index
+     */
+    lastIndexOf(value) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot get last index of a non-array value', this.__value);
+            return;
+        }
+        return this.__value.lastIndexOf(value);
+    }
+
+    // #endregion
+
+    // #region Dynamic methods
+
+    /**
+     * Adds a dynamic rendering depending on the live variables
+     * @param  {Function} _callback the live variables and the callback (last argument)
+     * @returns {PlacedLive} the placed live
+     */
+    _(_callback) {
+        return dyn(this, _callback);
+    }
+
+    /**
+     * Returns a dynamic map of the array
+     * @param {function} _callback the callback
+     * @returns the dynamic map
+     */
+    _map(_callback) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot map a non-array value', this.__value);
+            return;
+        }
+        return dyn(this, (value) => value.map(_callback));
+    }
+
+    /**
+     * Returns a dynamic if statement
+     * @param {function} _trueCallback the true callback
+     * @param {function} _falseCallback the false callback
+     * @returns the dynamic if statement
+     */
+    _if(_trueCallback, _falseCallback) {
+        let valueTrue = _trueCallback;
+        let valueFalse = _falseCallback;
+        if(typeof _trueCallback !== 'function') _trueCallback = () => valueTrue;
+        if(typeof _falseCallback !== 'function') _falseCallback = () => valueFalse;
+        return dyn(this, (value) => {
+            if(value) return _trueCallback(value);
+            return _falseCallback(value);
+        });
+    }
+
+    /**
+     * Returns a dynamic switch statement
+     * @param {object} _cases the cases
+     * @returns the dynamic switch statement
+     */
+    _switch(_cases) {
+        return dyn(this, (value) => {
+            if(_cases[value] === undefined && _cases.default !== undefined) return _cases.default;
+            return _cases[value];
+        });
+    }
+
+    // #endregion
+
+    // For objects
     
 }
 
@@ -268,17 +578,13 @@ class PlacedLive {
         this.callback = callback;
         this.node = undefined;
         this.selfClassName = undefined;
-        for(let live of this.lives) {
-            live.__placedLiveNodes.push(this);
-        }
     }
 
 }
 
-
-Live.prototype.valueOf = function (liveId) {
-    return this.get(liveId);
-}
+// Live.prototype.valueOf = function (liveId) {
+//     return this.get(liveId);
+// }
 
 /**
  * Creates a dynamic rendering depending on the live variables
@@ -311,5 +617,5 @@ function watch(...livesAndCallback) {
             callback(...args);
         });
     }
-    (async () => callback(...livesAndCallback.map((live) => live.get())))();
+    setTimeout(() => callback(...livesAndCallback.map((live) => live.get())), 0);
 }

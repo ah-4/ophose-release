@@ -20,7 +20,7 @@ Ophose is a simple, lightweight, and flexible framework for building web applica
 To get started with it, simply clone the repository and run the following commands:
 
 ```bash
-php ocl oph install
+php ocl ophose install
 ```
 
 This will install all the necessary dependencies and set up your project. You can then start building your application using the provided components and utilities.
@@ -55,7 +55,7 @@ This will create a simple component that renders a heading, a paragraph, and a b
 
 Link to the full documentation of Ophose. Include detailed guides, API reference, and any other relevant documentation resources.
 
-[Link to Documentation](https://ophose.ah4.fr/docs)
+[Link to Documentation](https://ophose2.ah4.fr/docs)
 
 ## Contributing
 

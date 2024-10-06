@@ -69,7 +69,7 @@ class ___env___ {
             throw jsonResult;
         }
 
-        if(options.useDirectives && jsonResult.ophose_encoded_directives) {
+        if(options.useDirectives && jsonResult?.ophose_encoded_directives) {
             for(let directive of jsonResult.ophose_encoded_directives) {
                 switch(directive.type) {
                     case 'redirect':

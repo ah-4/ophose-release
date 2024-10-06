@@ -186,23 +186,13 @@ class ___component___ extends ___element___ {
         if(node instanceof DocumentFragment) {
             for(let n of node.oList) {
                 n.classList.add(this.__getComponentUniqueId());
-                n.ophoseInstance = this;
             }
         }else{
             node.classList.add(this.__getComponentUniqueId());
         }
 
-
-        node.ophoseInstance = this;
         this.__setNode(node);
         this.__applyStyle();
-
-        this.onPlace(node);
-
-        for(let module of this.__myModules) {
-            node.classList.add(module._getClassName());
-            module.onPlace(this, node);
-        }
     }
 
     /**
@@ -228,7 +218,7 @@ class ___component___ extends ___element___ {
      * @param {object} child the child
      */
     appendChild(child) {
-        this.__node.append(___render___.toNode(child, true));
+        this.__node.append(___render___.toNode(child));
     }
 
     /**
@@ -243,19 +233,6 @@ class ___component___ extends ___element___ {
         if(this.__styleNode) {
             this.__styleNode.remove();
             this.__styleNode = undefined;
-        }
-        for(let live of this.__lives) {
-            live.__placedStyleComponents.splice(live.__placedStyleComponents.indexOf(this), 1);
-            for(let placedLive of [...live.__placedLiveNodes]) {
-                if(this.__node.contains(placedLive.node)) {
-                    live.__placedLiveNodes.splice(live.__placedLiveNodes.indexOf(placedLive), 1);
-                }
-            }
-            for(let placedTextLive of [...live.__placedLiveTextNodes]) {
-                if(this.__node.contains(placedTextLive)) {
-                    live.__placedLiveTextNodes.splice(live.__placedLiveTextNodes.indexOf(placedTextLive), 1);
-                }
-            }
         }
         ___component___.__allComponents[this.__componentUniqueId] = undefined;
     }

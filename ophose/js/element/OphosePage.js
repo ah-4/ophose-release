@@ -37,6 +37,11 @@ class ___page___ extends ___component___ {
             
     }
 
+    onPlace(element) {
+        super.onPlace(element);
+        ___event___.callEvent("onPageLoaded", app.CURRENT_URL);
+    }
+
     redirect(url) {
         if (this.__redirected) {
             dev.error("This page has already been redirected.");

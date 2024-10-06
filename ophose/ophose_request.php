@@ -1,4 +1,5 @@
 <?php
+use function Ophose\Util\configuration;
 include_once(__DIR__ . "/app/request/security.php");
 ?>
 <!DOCTYPE html>
@@ -11,16 +12,15 @@ include_once(__DIR__ . "/app/request/security.php");
         <script src="/@dep/jquery.js"></script>
         <script>
             const project = {
-                name: "<?php echo CONFIG["name"]; ?>",
-                productionMode: <?php echo CONFIG["production_mode"] ? "true" : "false"; ?>,
+                name: "<?php echo configuration()->get("name") ?>",
+                productionMode: <?php echo configuration()->get("production_mod") ? "true" : "false"; ?>,
             };
         </script>
-        <?php if(CONFIG["production_mode"]) { ?>
-            <script src="/ophose.js"></script>
+        <?php if(configuration()->get("production_mode")) { ?>
             <script src="/app.js"></script>
         <?php } else { ?>
             <?php
-            include_once(ROOT . '/env/oph/src/commands/build-ophose.php');
+            include_once(ROOT . '/env/ophose/src/command/build-ophose.php');
             foreach(JS_ORDER as $file) {
                 echo "<script src='/@ojs/" . $file . "'></script>";
             }
@@ -37,7 +37,7 @@ include_once(__DIR__ . "/app/request/security.php");
         });
         </script>
 
-        <title><?php echo CONFIG["name"] ?></title>
+        <title><?php echo configuration()->get("name") ?></title>
     </head>
 
     <body>

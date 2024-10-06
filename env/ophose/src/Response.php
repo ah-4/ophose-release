@@ -178,3 +178,8 @@ class Response {
     }
 
 }
+
+function response(string $body = "", int $status = 200, array $headers = []) {
+    $response = new Response($body, $status, $headers);
+    $response->send();
+}

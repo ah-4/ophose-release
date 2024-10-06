@@ -2,10 +2,12 @@
 
 namespace Ophose;
 
+use function Ophose\Util\configuration;
+
 class Session {
     
     private static function getKey($key) {
-        return (isset(CONFIG["project_id"]) ? CONFIG["project_id"] . "_" : "") . $key;
+        return (configuration()->get("project_id") ? configuration()->get("project_id") . "_" : "") . $key;
     }
 
     /**

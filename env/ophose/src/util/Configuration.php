@@ -1,7 +1,7 @@
 <?php
-namespace Ophose;
+namespace Ophose\Util;
 
-class Configuration{
+class Configuration {
 
     private $configurations = null;
 

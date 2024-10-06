@@ -2,6 +2,8 @@
 
 namespace Ophose;
 
+use Ophose\Util\App;
+
 class Template {
 
     /**
@@ -107,10 +109,6 @@ class Template {
         }
         $GLOBALS['__private_data']['in_section'] = null;
         $GLOBALS['__private_data']['section'][$section] = ob_get_clean();
-    }
-
-    
-
-    
+    }    
 
 }

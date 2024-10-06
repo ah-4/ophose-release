@@ -2,6 +2,8 @@
     "name": "Your Ophose Project",
     "production_mode": false,
     "api_key": "YOUR_API_KEY",
+    "secure_key": "YOUR_SECURE_KEY",
+    "url": "http://localhost/",
     "project_id": "your_project_id",
     "build": {
         "redirect": {
@@ -11,13 +13,9 @@
     "dependencies": {
         "ah4/database": "latest",
         "ah4/storage": "latest",
-        "ah4/starter": "latest",
-        "ah4/mail": "latest",
-        "ah4/auth": "latest",
-        "ah4/seo": "latest",
-        "ah4/lang": "latest"
+        "ah4/starter": "latest"
     },
     "ophose": {
-        "version": "1.0.0_c"
+        "version": "1.0.0_d_pre1_d"
     }
 }

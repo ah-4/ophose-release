@@ -2,9 +2,12 @@
 
 namespace Ophose;
 
-use Ophose\Command;
+use Closure;
+use Ophose\Command\Command;
 use ReflectionFunction;
 use ReflectionMethod;
+
+use function Ophose\Util\configuration;
 
 class Env
 {
@@ -94,7 +97,11 @@ class Env
 
         // Check CSRF Token if required
         $requestCSRFToken = getallheaders()["X-Csrf-Token"] ?? null;
-        if ($envEndpoint["csrf"] && ($requestCSRFToken == null || $requestCSRFToken !== Cookie::get("CSRF_TOKEN"))) {
+        $secureKey = getallheaders()["X-Secure-Key"] ?? null;
+        if ($envEndpoint["csrf"] &&
+            ($requestCSRFToken == null || $requestCSRFToken !== Cookie::get("CSRF_TOKEN")) &&
+            ($secureKey == null || $secureKey !== configuration()->get("secure_key"))
+        ) {
             Response::json(["error" => "CSRF Token not valid."], 403);
         }
 
@@ -127,7 +134,7 @@ class Env
         call_user_func_array($callback, $params);
     }
 
-    private function getReflection(array|string $callback) : ReflectionMethod|ReflectionFunction {
+    private function getReflection(array|string|Closure $callback) : ReflectionMethod|ReflectionFunction {
         if(is_array($callback)) {
             $class = $callback[0];
             $method = $callback[1];
@@ -173,7 +180,21 @@ class Env
             die(1);
         }
 
-        $envCommand["callback"]($command);
+        $callback = $envCommand["callback"];
+        if(is_array($callback)) {
+            $class = $callback[0];
+            if(class_exists($class)) {
+                $callback = [new $class(COMMAND->getAllArguments()), $callback[1]];
+            }
+        }
+        if($callback instanceof Command) {
+            $callback = [$callback, "run"];
+        }
+        if(is_string($callback) && class_exists($callback)) {
+            $callback = [new $callback(COMMAND->getAllArguments()), "run"];
+        }
+
+        call_user_func($callback);
     }
 
     /**
@@ -226,13 +247,13 @@ class Env
      * This function is used to register a command.
      * 
      * @param string $commandName the command
-     * @param callable $callback the callback
+     * @param callable|Command $callback the callback or the command object
      * @param string $description the description of the command
      * @return void
      */
     protected final function command(
         string $commandName,
-        callable $callback,
+        string|callable|Command $callback,
         string $description = null
     ) {
         $this->envCommands[strtolower($commandName)] = [

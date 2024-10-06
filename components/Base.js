@@ -6,15 +6,15 @@ class Base extends Ophose.Base {
     }
 
     style() {
-        let theme = Live.local("theme", "dark").get();
+        let theme = Live.local("theme", "dark");
         return /* css */`
             :root {
                 --font-family: Arial, sans-serif;
-                --bg-color: ${theme == "dark" ? "#111" : "#f0f0f0"};
-                --font-color: ${theme == "dark" ? "#f0f0f0" : "#666"};
-                --font-color-secondary: ${theme == "dark" ? "#aaa" : "#999"};
-                --link-color: ${theme == "dark" ? "#88a" : "#88b"};
-                --comp-color: ${theme == "dark" ? "#222" : "#ddd"};
+                --bg-color: ${theme.value == "dark" ? "#111" : "#f0f0f0"};
+                --font-color: ${theme.value == "dark" ? "#f0f0f0" : "#666"};
+                --font-color-secondary: ${theme.value == "dark" ? "#aaa" : "#999"};
+                --link-color: ${theme.value == "dark" ? "#88a" : "#88b"};
+                --comp-color: ${theme.value == "dark" ? "#222" : "#ddd"};
             }
 
             * {
@@ -32,15 +32,9 @@ class Base extends Ophose.Base {
     }
 
     render() {
-        return {
-            _: 'div', c: [
-                {
-                    _: 'main',
-                    id: 'page',
-                    children: this.props.children
-                }
-            ]
-        }
+        return _('div',
+            this.props.children
+        )
     }
 
 }

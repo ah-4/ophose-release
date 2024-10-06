@@ -4,10 +4,8 @@ require_once(__DIR__ . '/../src/autoload.php');
 
 use Ophose\Response;
 
-// URL PROTECTION
-if(strpos($_SERVER['REQUEST_URI'], "..") !== false) {
-    Response::raw("You may not access this file", 403);
-}
+// Prevent directory traversal
+if(strpos($_SERVER['REQUEST_URI'], "..") !== false) Response::raw("You may not access this file", 403);
 
 /**
  * @var string The sanitized request URL (without the query string)
@@ -43,9 +41,7 @@ function isTargetRequest(string $shouldStartsWith) {
 // FORBIDDEN EXTENSIONS
 $FORBIDDEN_EXTENSIONS = ["oconf", "local", "htaccess"];
 foreach($FORBIDDEN_EXTENSIONS as $ext) {
-    if(str_ends_with(REQUEST_HTTP_URL, "." . $ext) && file_exists(ROOT . REQUEST_HTTP_URL)) {
-        Response::raw("You may not access this file", 403);
-    }
+    if(str_ends_with(REQUEST_HTTP_URL, "." . $ext) && file_exists(ROOT . REQUEST_HTTP_URL)) Response::raw("You may not access this file", 403);
 }
 
 // ENVRIONMENT REQUEST
@@ -53,11 +49,11 @@ if(isTargetRequest('/@env/') || isTargetRequest('/@/') || isTargetRequest('/@api
     // Environment request as ('/@env/' + envName + '/' + endpoint)
     define('ENV_REQUEST', 'API');
     include_once(__DIR__ . '/../src/rest/env/env.php');
-    Response::json(["message" => "End of the request."], 400);
+    Response::json(["message" => "End of the request."], 500);
     die();
 }
 
-// dependenCY REQUEST
+// DEPENDENCY REQUEST
 if(isTargetRequest('/@dep/')) {
     // Dependency request as ('/@dep/' + dependency)
     $REQUEST_FILE_PATH = OPHOSE_APP_PATH . 'dependencies/' . $REQUEST_FIXED_URL;

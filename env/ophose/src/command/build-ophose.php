@@ -30,7 +30,7 @@ $dev_includes = [
 $JS_ORDER = array_merge($JS_ORDER, $dev_includes);
 
 define('JS_ORDER', $JS_ORDER);
-define('DEV_INCLUDES', $dev_includes);
+define('JS_DEV_INCLUDES', $dev_includes);
 
 function compile() {
     $time = time();
@@ -38,7 +38,7 @@ function compile() {
     // Get all required files
     echo "Building Ophose... \n";
     $js_order = JS_ORDER;
-    $js_order = array_diff($js_order, DEV_INCLUDES);
+    $js_order = array_diff($js_order, JS_DEV_INCLUDES);
 
     $required_files = array_map(function($file) {
         $fixed_path = str_replace('\/', DIRECTORY_SEPARATOR, $file);
