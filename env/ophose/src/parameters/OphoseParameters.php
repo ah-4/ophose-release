@@ -7,8 +7,7 @@ class OphoseParameters {
     /**
      * URL of official Ophose website for fetching and pushing data.
      */
-    const URL = 'https://ophose2.ah4.fr';
-    const URL_ = 'http://ophose.localhost';
+    const URL = 'https://ophose.dev/';
 
     /**
      * Path to the directory where the external resources are stored.
