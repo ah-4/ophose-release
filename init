@@ -1,8 +1,5 @@
 <?php
 
-use ZipArchive;
-use Exception;
-
 class OphoseInitializer
 
 {
@@ -76,7 +73,22 @@ class OphoseInitializer
             throw new Exception("Failed to open ZIP archive.\n");
         }
 
-        o_rm_dir_recursive($this->tmp_dir);
+        $this->cleanup();
+    }
+
+    private function cleanup(): void
+    {
+        unlink($this->version_file);
+        $this->deleteDir($this->tmp_dir);
+    }
+
+    private function deleteDir($dir): void
+    {
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            (is_dir("$dir/$file")) ? $this->deleteDir("$dir/$file") : unlink("$dir/$file");
+        }
+        rmdir($dir);
     }
 
     private function prepareTmpDir(): void
@@ -118,7 +130,7 @@ class OphoseInitializer
     {
         if (!str_ends_with($filename, '/')) {
             $zip->extractTo($this->tmp_dir, $original_filename);
-            copy($this->tmp_dir . "/" . $original_filename, ROOT . "/" . $filename);
+            copy($this->tmp_dir . "/" . $original_filename, to: __DIR__ . "/" . $filename);
         }
     }
 
