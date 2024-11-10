@@ -43,6 +43,11 @@ class Client
     private CurlHandle|false|null $ch = null;
 
     /**
+     * @var array $cookies The cookies sent with the request.
+     */
+    private array $cookies = [];
+
+    /**
      * Client constructor.
      * 
      * @param string $url The base URL for the request.
@@ -206,6 +211,11 @@ class Client
                      parse_url($this->url, PHP_URL_HOST) . 
                      preg_replace('/\/+/', '/', parse_url($this->url, PHP_URL_PATH));
 
+        // Check if cookies are set and add them to the headers
+        if (count($this->cookies) > 0) {
+            $this->headers[] = 'Cookie: ' . http_build_query($this->cookies, '', '; ');
+        }
+
         // Initialize cURL and set options
         $this->ch = curl_init($this->url);
         curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, $this->method);
@@ -219,6 +229,12 @@ class Client
         $this->response = curl_exec($this->ch);
         curl_close($this->ch);
 
+        return $this;
+    }
+
+    public function cookie(string $name, string $value): static
+    {
+        $this->cookies[$name] = $value;
         return $this;
     }
 

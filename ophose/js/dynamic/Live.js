@@ -5,19 +5,33 @@ class Live {
 
     __processValue(value, thisArg = this) {
         if(typeof value === 'object' && value !== null && !Array.isArray(value) && value.constructor === Object) {
+            thisArg.__valueIsObject = true;
+            let usedValues = new Set();
             for(let key in value) {
+                usedValues.add(key);
                 if(thisArg[key] instanceof Live) {
                     thisArg[key].set(value[key]);
                 } else {
                     thisArg[key] = new Live(value[key]);
                 }
+                thisArg.__objectUsedKeys.add(key);
+            }
+            if(!thisArg.__keepValuesOnUpdateIfNotInObject) {
+                for(let key of thisArg.__objectUsedKeys) {
+                    if(!usedValues.has(key)) {
+                        thisArg[key].set(undefined);
+                    }
+                }
             }
             return;
         }
+        this.__valueIsObject = false;
         thisArg.__value = value;
     }
 
     constructor(value) { 
+        this.__objectUsedKeys = new Set();
+        this.__valueIsObject = false;
         this.__processValue(value);
         this.__placedStyleComponents = [];
         this.__dynCallbacks = [];
@@ -26,6 +40,18 @@ class Live {
         this.__rules = [];
         this.__rulesDependencies = [];
         this.__updateOnlyIfValueChanges = true;
+        this.__keepValuesOnUpdateIfNotInObject = true;
+    }
+
+    /**
+     * Either keeps values on update if not in object or not
+     * when the object receives a new value
+     * @param {boolean} value the value
+     * @returns the live variable
+     */
+    keepValues(value) {
+        this.__keepValuesOnUpdateIfNotInObject = value;
+        return this;
     }
 
     /**
@@ -82,6 +108,13 @@ class Live {
      * @returns the value
      */
     get() {
+        if (this.__valueIsObject) {
+            let obj = {};
+            for(let key of this.__objectUsedKeys) {
+                obj[key] = this[key].get();
+            }
+            return obj;
+        }
         if (Live.__currentReadingStyleComponent) {
             let component = Live.__currentReadingStyleComponent;
             this.__placedStyleComponents.push(component);

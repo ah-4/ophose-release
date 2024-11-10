@@ -1,0 +1,14 @@
+[
+    {
+        "_": "h1",
+        "children": [
+            "Auto-generated documentation of {{name}} by {{author}}"
+        ]
+    },
+    {
+        "_": "p",
+        "children": [
+            "Version: {{version}}"
+        ]
+    }
+]

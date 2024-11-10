@@ -13,7 +13,9 @@ class ___env___ {
 
         let jsonResult = null;
         let error = false;
-        if(data instanceof Live) data = data.get();
+        if(data instanceof Live) {
+            data = data.value;
+        }
         let options = {
             method: 'POST',
             headers: {},

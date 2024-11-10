@@ -12,6 +12,7 @@ const Ophose = {
 
     Environment: ___env___,
     Event: ___event___,
+    Plugin: ___plugin___
 }
 
 const ofi = {};

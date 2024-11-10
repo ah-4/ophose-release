@@ -8,7 +8,7 @@ include_once(__DIR__ . "/../../../request/security.php");
 // If env request is invalid
 $requestiInfos = explode('/', REQUEST_FIXED_URL);
 
-if(count($requestiInfos) <= 1) {
+if(count($requestiInfos) < 1) {
     Response::json([
         "error" => "Invalid environment request"
     ], 400);

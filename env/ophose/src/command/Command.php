@@ -82,9 +82,9 @@ class Command {
         $options = [];
         foreach($this->arguments as $argument){
             if(str_starts_with($argument, '--')){
-                $options[] = $argument->substring(2);
+                $options[] = substr($argument, 2);
             } else if(str_starts_with($argument, '-') && !is_numeric($argument)){
-                $options[] = $argument->substring(1);
+                $options[] = substr($argument, 1);
             }
         }
         return $options;

@@ -3,6 +3,7 @@
 use function Ophose\Util\configuration;
 
 define('ROOT', realpath(__DIR__ . "/../../../") . "/");
+define('APP_PATH', ROOT . "app/");
 define('ENV_PATH', ROOT . "env/");
 define('OPHOSE_PATH', ROOT . "ophose/");
 define('OPHOSE_APP_PATH', OPHOSE_PATH . "app/");
@@ -19,7 +20,7 @@ class AutoLoader {
         // Local environment path
         if(!$path) $path = o_realpath(ENV_PATH . $namespaces[0] . '/src/' . implode('/', array_slice($namespaces, 1)) . ".php");
         // External environment path
-        if(!$path) $path = o_realpath(ENV_PATH . 'ext/' . $namespaces[0] . '/' . $namespaces[1] . '/src/' . implode('/', array_slice($namespaces, 2)) . ".php");
+        if(!$path && sizeof($namespaces) >= 2) $path = o_realpath(ENV_PATH . 'ext/' . $namespaces[0] . '/' . $namespaces[1] . '/src/' . implode('/', array_slice($namespaces, 2)) . ".php");
 
         if($path) {
             include_once($path);

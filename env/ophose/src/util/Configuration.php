@@ -7,6 +7,7 @@ class Configuration {
 
     public function __construct(string $path)
     {
+        if(!file_exists($path)) $path = $path . '.oconf';
         if(!file_exists($path)) return;
         $array = json_decode(file_get_contents($path), true);
         if(file_exists($path . '.local')) {

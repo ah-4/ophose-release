@@ -21,6 +21,11 @@ class dev {
         dev.errors.add(error);
     }
 
+    static log(message) {
+        if(project.productionMode) return;
+        console.log(message);
+    }
+
     static init() {
         if(project.productionMode) return;
 

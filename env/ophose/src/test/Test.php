@@ -4,6 +4,7 @@ namespace Ophose\Test;
 
 use Ophose\Test\Exception\TestAssertException;
 
+use function Ophose\Http\client;
 use function Ophose\Util\clr;
 
 /**
@@ -38,6 +39,16 @@ class Test {
     public function before(): void {}
 
     /**
+     * Prepares the environment before each test is run.
+     * 
+     * This method is called before each test is run. It can be used to set up
+     * necessary configurations or initialize resources.
+     * 
+     * @return void
+     */
+    public function beforeEach(): void {}
+
+    /**
      * Cleans up after the test has been run.
      *
      * This method is called after the main test logic has completed.
@@ -46,6 +57,16 @@ class Test {
      * @return void
      */
     public function after(): void {}
+
+    /**
+     * Cleans up after each test has been run.
+     * 
+     * This method is called after each test has completed. It can be used to release
+     * resources, close connections, etc.
+     * 
+     * @return void
+     */
+    public function afterEach(): void {}
 
     // #region Assertions
 
@@ -83,12 +104,12 @@ class Test {
      * This method checks if the two values are equal. If the values are not equal,
      * an exception is thrown with the specified message.
      *
-     * @param mixed $expected The expected value.
      * @param mixed $actual The actual value.
+     * @param mixed $expected The expected value.
      * @return void
      * @throws TestAssertException
      */
-    public function assertEquals(mixed $expected, mixed $actual): void {
+    public function assertEquals(mixed $actual, mixed $expected): void {
         if ($expected !== $actual) throw new TestAssertException($expected, $actual, "The two values are not equal.");
     }
 
@@ -98,12 +119,12 @@ class Test {
      * This method checks if the two values are not equal. If the values are equal,
      * an exception is thrown with the specified message.
      *
-     * @param mixed $expected The expected value.
      * @param mixed $actual The actual value.
+     * @param mixed $expected The expected value.
      * @return void
      * @throws TestAssertException
      */
-    public function assertNotEquals(mixed $expected, mixed $actual): void {
+    public function assertNotEquals(mixed $actual, mixed $expected): void {
         if ($expected === $actual) throw new TestAssertException($expected, $actual, "The two values are equal and should not be.");
     }
 
@@ -225,5 +246,36 @@ class Test {
         if ($value1 > $value2) throw new TestAssertException($value1, $value2, "The first value is not less than or equal to the second value.");
     }
 
+    /**
+     * Asserts that the array contains the specified key.
+     *
+     * This method checks if the array contains the specified key. If the array does not
+     * contain the key, an exception is thrown with the specified message.
+     *
+     * @param array $array The array to check.
+     * @param mixed $key The key to check.
+     * @return void
+     * @throws TestAssertException
+     */
+    public function assertArrayHasKey(array $array, mixed $key): void {
+        if (!array_key_exists($key, $array)) throw new TestAssertException("key '$key'", "no key '$key'", "The array does not contain the specified key.");
+    }
+
+    /**
+     * Asserts that the array does not contain the specified key.
+     *
+     * This method checks if the array does not contain the specified key. If the array contains
+     * the key, an exception is thrown with the specified message.
+     *
+     * @param array $array The array to check.
+     * @param mixed $key The key to check.
+     * @return void
+     * @throws TestAssertException
+     */
+    public function assertArrayNotHasKey(array $array, mixed $key): void {
+        if (array_key_exists($key, $array)) throw new TestAssertException("no key '$key'", "key '$key'", "The array contains the specified key and should not.");
+    }
+
     // #endregion
+    
 }

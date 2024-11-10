@@ -95,6 +95,9 @@ class Event
  */
 function dispatch($event) {
     if(empty(Event::$listeners)) {
+        if(!file_exists(ROOT . 'app/event')) {
+            return $event;
+        }
         foreach(o_get_files_recursive(ROOT . 'app/event', 'php') as $file) {
             include_once $file;
         }
@@ -103,7 +106,8 @@ function dispatch($event) {
         throw new \Exception("Event must be a subclass of Event");
     }
     if(!class_exists($event::class)) {
-        throw new \Exception("Event class $event does not exist");
+        $event_name = get_class($event);
+        throw new \Exception("Event class $event_name does not exist");
     }
     if(!isset(Event::$listeners[$event::class])) {
         return $event;

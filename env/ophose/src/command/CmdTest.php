@@ -2,9 +2,15 @@
 
 namespace Ophose\Command;
 
+use AH4\Database\Database;
+use AutoLoader;
+use Ophose\Env;
 use Ophose\Test\Test;
 
+use Ophose\Util\Configuration;
+use function AH4\Database\db;
 use function Ophose\Util\clr;
+use function Ophose\Util\configuration;
 
 class CmdTest extends Command {
 
@@ -43,6 +49,7 @@ class CmdTest extends Command {
             if (strpos($method, "test") === 0) {
                 echo clr("\n    Running test: &cyan;$method\n");
                 $tested++;
+                $test->beforeEach();
                 try {
                     $test->$method();
                     echo clr("        &green;Test passed\n");
@@ -60,6 +67,8 @@ class CmdTest extends Command {
                             "tested" => $tested
                         ];
                     }
+                } finally {
+                    $test->afterEach();
                 }
             }
         }
@@ -70,6 +79,35 @@ class CmdTest extends Command {
         ];
     }
 
+    private function setTestDatabase() {
+        echo clr("&yellow;Setting up test database...\n");
+        $database_name = (new Configuration(ROOT .'tests/config'))->get("database.name");
+        echo clr("Database name: &cyan;$database_name\n");
+        db($database_name);
+        Database::createDatabaseIfNotExists();
+
+        if(AutoLoader::getEnvironmentPath('AH4/Storage') !== false) {
+            echo clr("&yellow;Setting up test database for Storage...\n");
+            $env = Env::getEnvironment(ROOT . 'env/ext/AH4/Storage');
+            $env->onInstall();
+            echo clr("&green;Storage schema transferred.\n");
+        }
+
+        if(AutoLoader::getEnvironmentPath('AH4/Auth') !== false) {
+            echo clr("&yellow;Setting up test database for Auth...\n");
+            $env = Env::getEnvironment(ROOT . 'env/ext/AH4/Auth');
+            $env->onInstall();
+            echo clr("&green;Auth schema transferred.\n");
+        }
+
+        if(AutoLoader::getEnvironmentPath('AH4/Model') !== false) {
+            echo clr("&yellow;Transferring schema...\n");
+            \AH4\Model\Schema::get()->transfer(true, true, true);
+            echo clr("&green;Schema transferred.\n");
+        }
+        echo clr("&green;Test database set up.\n");
+    }
+
     private function runTests() {
         $failed = 0;
         $tested = 0;
@@ -78,6 +116,7 @@ class CmdTest extends Command {
             echo "No tests found.\n";
             return;
         }
+        $this->setTestDatabase();
         echo clr("Tests are now &green;running&reset;...\n");
         echo "There is a total of $total_files test files.\n";
         foreach($this->tests_files as $test_file) {

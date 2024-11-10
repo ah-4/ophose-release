@@ -3,6 +3,7 @@
 namespace Ophose;
 
 use Ophose\Command\CmdBuild;
+use Ophose\Command\CmdGenerate;
 use Ophose\Command\CmdInstall;
 use Ophose\Command\CmdPublish;
 use Ophose\Command\CmdUpdate;
@@ -20,6 +21,7 @@ return new class extends Env {
         $this->command('build', CmdBuild::class);
         $this->command('test', CmdTest::class);
         $this->command('publish', CmdPublish::class);
+        $this->command('generate', CmdGenerate::class);
     }
 
     public function endpoints()

@@ -1,6 +1,7 @@
 <?php
 
 $JS_ORDER = [
+    "plugin/Plugin.js",
     "html/render.js",
 
     "import.js",

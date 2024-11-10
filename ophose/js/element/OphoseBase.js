@@ -1,24 +1,23 @@
 class ___base___ extends ___component___ {
 
-    static registered = {};
-
     constructor(props) {
         super(props);
     }
 
-    /**
-     * Register a new custom element
-     * @param {*} tagName the name of the custom element
-     * @param {*} clsComponent the class of the component
-     */
-    register(tagName, clsComponent) {
-        // Check if the tag name is not a native HTML tag like div, span, etc.
-        let element = document.createElement(tagName);
-        if(!(element instanceof HTMLUnknownElement) && element.constructor !== HTMLElement){
-            dev.error(`The tag name ${tagName} is not a valid custom element.\nThe element is: ${element}`);
+    usePlugin(plugin) {
+        if(typeof plugin === 'function' && plugin.prototype instanceof ___plugin___) {
+            if(___plugin___.plugins.plugins.indexOf(plugin) === -1) {
+                ___plugin___.plugins.plugins.push(plugin);
+                new plugin();
+                dev.log(`Plugin ${plugin.name} loaded.`);
+            } else {
+                dev.error(`Plugin ${plugin.name} already loaded.`);
+            }
             return;
         }
-        ___base___.registered[tagName] = clsComponent;
+        dev.error(`Invalid plugin ${plugin}. Plugin must be a class.`);
     }
+
+
 
 }

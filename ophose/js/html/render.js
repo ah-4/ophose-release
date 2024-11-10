@@ -9,10 +9,30 @@ String.prototype.prettyHashCode = function() {
 }
 
 const defined = '__ophs_defined';
+const htmlTags = [
+    'html', 'head', 'title', 'base', 'link', 'meta', 'style', 'script', 'noscript',
+    'body', 'section', 'nav', 'article', 'aside', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+    'header', 'footer', 'address', 'p', 'hr', 'pre', 'blockquote', 'ol', 'ul', 'li', 
+    'dl', 'dt', 'dd', 'figure', 'figcaption', 'main', 'div', 'a', 'em', 'strong', 
+    'small', 's', 'cite', 'q', 'dfn', 'abbr', 'ruby', 'rt', 'rp', 'data', 'time', 
+    'code', 'var', 'samp', 'kbd', 'sub', 'sup', 'i', 'b', 'u', 'mark', 'bdi', 'bdo', 
+    'span', 'br', 'wbr', 'ins', 'del', 'img', 'iframe', 'embed', 'object', 'param', 
+    'video', 'audio', 'source', 'track', 'canvas', 'map', 'area', 'svg', 'math', 
+    'table', 'caption', 'colgroup', 'col', 'tbody', 'thead', 'tfoot', 'tr', 'td', 
+    'th', 'form', 'fieldset', 'legend', 'label', 'input', 'button', 'select', 
+    'datalist', 'optgroup', 'option', 'textarea', 'output', 'progress', 'meter', 
+    'details', 'summary', 'dialog', 'script', 'noscript', 'template', 'slot', 'portal'
+]
 const htmlProperties = ["name", "id"];
 const htmlAttrs = ["accept","accept-charset","accesskey","action","align","alt","async","autocomplete","autofocus","autoplay","bgcolor","border","charset","checked","cite","color","cols","colspan","content","contenteditable","controls","coords","data","datetime","defer","dir","disabled","download","draggable","enctype","for","form","headers","height","hidden","high","href","hreflang","http-equiv","id","integrity","ismap","itemprop","keytype","kind","label","lang","list","loop","low","max","maxlength","media","method","min","multiple","muted","name","novalidate","open","optimum","pattern","placeholder","poster","preload","radiogroup","readonly","rel","required","reversed","rows","rowspan","sandbox","scope","scoped","selected","shape","size","sizes","span","spellcheck","src","srcdoc","srclang","srcset","start","step","style","tabindex","target","title","translate","type","usemap","value","width","wrap"];
 const htmlEvents = ["onabort", "onautocomplete", "onautocompleteerror", "onblur", "oncancel", "oncanplay", "oncanplaythrough", "onchange", "onclick", "onclose", "oncontextmenu", "oncuechange", "ondblclick", "ondrag", "ondragend", "ondragenter", "ondragexit", "ondragleave", "ondragover", "ondragstart", "ondrop", "ondurationchange", "onemptied", "onended", "onerror", "onfocus", "oninput", "oninvalid", "onkeydown", "onkeypress", "onkeyup", "onload", "onloadeddata", "onloadedmetadata", "onloadstart", "onmousedown", "onmouseenter", "onmouseleave", "onmousemove", "onmouseout", "onmouseover", "onmouseup", "onmousewheel", "onpause", "onplay", "onplaying", "onprogress", "onratechange", "onreset", "onresize", "onscroll", "onseeked", "onseeking", "onselect", "onshow", "onsort", "onstalled", "onsubmit", "onsuspend", "ontimeupdate", "ontoggle", "onvolumechange", "onwaiting"];
 const ophAttrs = ["_name"];
+
+(() => {
+    for(let tag of htmlTags) {
+        window['_' + tag] = (...props) => _(tag, ...props)
+    }
+})()
 
 class ___render___ {
 
@@ -160,12 +180,9 @@ class ___render___ {
 
         // Case Default: oph is a dict
         if (typeof oph == "object") {
-            if (___base___.registered[oph._]) {
-                let copyOph = {...oph};
-                let clsComponent = ___base___.registered[oph._];
-                delete copyOph._;
-                let component = new clsComponent(copyOph);
-                return ___render___.toNode(component);
+            for(let renderCallback of ___plugin___.plugins.use.render) {
+                let result = renderCallback(oph);
+                if(result) oph = result;
             }
             let ophNode = document.createElement(oph._);
             if(oph.c) oph.children = oph.c;
