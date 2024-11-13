@@ -42,7 +42,7 @@ class ResourceGenerator {
      * @param string $destination The destination file
      * @param array $data The data to replace in the file
      */
-    protected function copy($source, $destination, $data) {
+    protected function copy(string $source, string $destination, array $data = []) {
         if(is_dir($source)) {
             $this->copyDirectory($source, $destination, $data);
         } else {
@@ -57,13 +57,15 @@ class ResourceGenerator {
      * @param string $destination The destination directory
      * @param array $data The data to replace in the files
      */
-    protected function copyDirectory($source, $destination, $data) {
+    protected function copyDirectory(string $source, string $destination, array $data = []) {
+        $source = realpath($source);
         if(!is_dir($destination)) {
             mkdir($destination, 0755, true);
-        } else {
-            throw new \Exception("Directory $destination already exists.");
         }
         $dir = opendir($source);
+        if(!$dir) {
+            throw new \Exception("Could not open directory $source.");
+        }
         while(false !== ( $file = readdir($dir)) ) {
             if (( $file != '.' ) && ( $file != '..' )) {
                 if ( is_dir($source . '/' . $file) ) {
@@ -82,7 +84,7 @@ class ResourceGenerator {
      * @param string $destination The destination file
      * @param array $data The data to replace in the file
      */
-    protected function copyFile($source, $destination, $data) {
+    protected function copyFile(string $source, string $destination, array $data = []) {
         if(file_exists($destination)) {
             throw new \Exception("File $destination already exists.");
         }
@@ -102,6 +104,10 @@ class ResourceGenerator {
             throw new \Exception("Missing required argument at index $index." . "\n" . $message);
         }
         return $this->args[$index];
+    }
+
+    protected function optionalArg(int $index, $default = null) {
+        return $this->args[$index] ?? $default;
     }
 
 }

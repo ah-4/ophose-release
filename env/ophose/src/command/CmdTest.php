@@ -5,12 +5,12 @@ namespace Ophose\Command;
 use AH4\Database\Database;
 use AutoLoader;
 use Ophose\Env;
+use Ophose\Response;
 use Ophose\Test\Test;
 
 use Ophose\Util\Configuration;
 use function AH4\Database\db;
 use function Ophose\Util\clr;
-use function Ophose\Util\configuration;
 
 class CmdTest extends Command {
 
@@ -19,6 +19,7 @@ class CmdTest extends Command {
 
     public function before(){
         $this->tests_files = o_get_files_recursive(ROOT . "tests", "php");
+        define("TEST_MODE", true);
     }
 
     public function run() {
@@ -47,6 +48,7 @@ class CmdTest extends Command {
         $methods = get_class_methods($test);
         foreach ($methods as $method) {
             if (strpos($method, "test") === 0) {
+                Response::clearLastResponse();
                 echo clr("\n    Running test: &cyan;$method\n");
                 $tested++;
                 $test->beforeEach();
@@ -83,7 +85,15 @@ class CmdTest extends Command {
         echo clr("&yellow;Setting up test database...\n");
         $database_name = (new Configuration(ROOT .'tests/config'))->get("database.name");
         echo clr("Database name: &cyan;$database_name\n");
-        db($database_name);
+        $db = db($database_name);
+        // Drop all tables
+        $db->exec("SET FOREIGN_KEY_CHECKS = 0");
+        $tables = $db->query("SHOW TABLES")->fetchAll();
+        foreach($tables as $table) {
+            $table_name = $table[0];
+            $db->exec("DROP TABLE $table_name");
+        }
+        $db->exec("SET FOREIGN_KEY_CHECKS = 1");
         Database::createDatabaseIfNotExists();
 
         if(AutoLoader::getEnvironmentPath('AH4/Storage') !== false) {
@@ -102,7 +112,7 @@ class CmdTest extends Command {
 
         if(AutoLoader::getEnvironmentPath('AH4/Model') !== false) {
             echo clr("&yellow;Transferring schema...\n");
-            \AH4\Model\Schema::get()->transfer(true, true, true);
+            \AH4\Model\Schema::get()->transfer();
             echo clr("&green;Schema transferred.\n");
         }
         echo clr("&green;Test database set up.\n");

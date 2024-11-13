@@ -7,6 +7,7 @@ class Response {
     private int $status = 200;
     private array $headers = [];
     private ?string $body = "";
+    private static ?Response $last_response = null;
 
     /**
      * Send a JSON response
@@ -15,12 +16,11 @@ class Response {
      * @param integer $status The HTTP status code
      * @return void
      */
-    public static function json(array $data, int $status = 200) {
+    public function json(array $data, int $status = 200) {
         $response = new Response();
         $response->setHeader("Content-Type", "application/json");
         $response->setBody(json_encode($data));
         $response->setStatus($status);
-        $response->send();
     }
 
     /**
@@ -30,11 +30,10 @@ class Response {
      * @param integer $status The HTTP status code
      * @return void
      */
-    public static function raw(mixed $data, int $status = 200) {
+    public function raw(mixed $data, int $status = 200) {
         $response = new Response();
         $response->setBody($data);
         $response->setStatus($status);
-        $response->send();
     }
 
     /**
@@ -44,12 +43,11 @@ class Response {
      * @param integer $status The HTTP status code
      * @return void
      */
-    public static function file(string $filePath, int $status = 200) {
+    public function file(string $filePath, int $status = 200) {
         $response = new Response();
         if(!file_exists($filePath) || is_dir($filePath)) {
             $response->setBody("File not found");
             $response->setStatus(404);
-            $response->send();
         }
         $response->setHeader("Content-Length", filesize($filePath));
         $response->setHeader("Content-Type", mime_content_type($filePath));
@@ -57,7 +55,6 @@ class Response {
         if($extension === "css") $response->setHeader("Content-Type", "text/css");
         $response->setBody(file_get_contents($filePath));
         $response->setStatus($status);
-        $response->send();
     }
 
     /**
@@ -68,12 +65,11 @@ class Response {
      * @param integer $status The HTTP status code
      * @return void
      */
-    public static function download(string $filePath, string $fileName = null, int $status = 200) {
+    public function download(string $filePath, string $fileName = null, int $status = 200) {
         $response = new Response();
         if(!file_exists($filePath) || is_dir($filePath)) {
             $response->setBody("File not found");
             $response->setStatus(404);
-            $response->send();
         }
         if($fileName === null) $fileName = basename($filePath);
         header("Content-Type: application/octet-stream");
@@ -92,12 +88,11 @@ class Response {
      * @param integer $status The HTTP status code
      * @return void
      */
-    public static function html(string $html, int $status = 200) {
+    public function html(string $html, int $status = 200) {
         $response = new Response();
         $response->setHeader("Content-Type", "text/html");
         $response->setBody($html);
         $response->setStatus($status);
-        $response->send();
     }
 
     /**
@@ -107,13 +102,13 @@ class Response {
      * @param integer $status The HTTP status code
      * @return void
      */
-    public static function redirect(string $url, int $status = 302) {
+    public function redirect(string $url, int $status = 302) {
         header('Location: ' . $url);
         exit;
     }
 
-    public static function directive(Directive $directive) {
-        return Response::json([
+    public function directive(Directive $directive) {
+        return response()->json([
             "ophose_encoded_directives" => $directive->getDirectives()
         ]);
     }
@@ -130,6 +125,7 @@ class Response {
         $this->status = $status;
         $this->headers = $headers;
         $this->body = $body;
+        self::$last_response = $this;
     }
 
     /**
@@ -164,22 +160,78 @@ class Response {
     }
 
     /**
-     * Send the response
+     * Send the HTTP response
      *
      * @return void
      */
-    public function send() {
+    private function sendHttpResponse() {
         http_response_code($this->status);
         foreach($this->headers as $header => $value) {
             header($header . ": " . $value);
         }
         echo $this->body;
-        die(0);
+    }
+
+    /**
+     * Send the last response then die (or only set the last response if in test mode)
+     * 
+     * @return void
+     */
+    public static function sendLastResponseAndDie() {
+        $last_response = self::$last_response;
+        if(defined('TEST_MODE') && TEST_MODE) return;
+        if($last_response) $last_response->sendHttpResponse();
+        die();
+    }
+
+    /**
+     * Get the last response
+     *
+     * @return Response The last response
+     */
+    public static function getLastResponse() {
+        return self::$last_response;
+    }
+
+    /**
+     * Clear the last response
+     *
+     * @return void
+     */
+    public static function clearLastResponse() {
+        self::$last_response = null;
+    }
+
+    /**
+     * Get the response status code
+     * 
+     * @return integer The response status code
+     */
+    public function status() {
+        return $this->status;
+    }
+
+    /**
+     * Get the response body
+     * 
+     * @return string The response body
+     */
+    public function body() {
+        return $this->body;
+    }
+
+    /**
+     * Get the response content type
+     * 
+     * @return string The response content type
+     */
+    public function contentType() {
+        return $this->headers["Content-Type"];
     }
 
 }
 
 function response(string $body = "", int $status = 200, array $headers = []) {
     $response = new Response($body, $status, $headers);
-    $response->send();
+    return $response;
 }

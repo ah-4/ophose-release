@@ -2,6 +2,7 @@
 
 namespace Ophose\Test;
 
+use Ophose\Http\Client;
 use Ophose\Test\Exception\TestAssertException;
 
 use function Ophose\Http\client;
@@ -277,5 +278,12 @@ class Test {
     }
 
     // #endregion
-    
+
+    // #region HTTP
+
+    public function client(string $url): TestClient {
+        return new TestClient($url);
+    }
+
+    // #endregion
 }

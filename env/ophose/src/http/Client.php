@@ -3,8 +3,10 @@
 namespace Ophose\Http;
 
 use CurlHandle;
+use Ophose\Response;
 use Ophose\Http\Exception\RequestNotSentException;
 
+use Ophose\Test\Test;
 use function Ophose\Util\configuration;
 
 /**
@@ -35,7 +37,7 @@ class Client
     /**
      * @var string|false|null $response The response received from the server after sending the request.
      */
-    protected string|false|null $response = null;
+    protected string|false|Response|null $response = null;
 
     /**
      * @var CurlHandle|false|null $ch The cURL handle for the HTTP request.
@@ -246,6 +248,9 @@ class Client
      */
     public function status(): int
     {
+        if ($this->response instanceof Response) {
+            return $this->response->status();
+        }
         if ($this->ch === null) {
             throw new RequestNotSentException();
         }
@@ -258,8 +263,11 @@ class Client
      * @return string|false|null The response body or false/null if not available.
      * @throws RequestNotSentException If the request was not sent before calling this method.
      */
-    public function response(): string|false|null
+    public function response(): string|false|Response|null
     {
+        if($this->response instanceof Response) {
+            return $this->response;
+        }
         if ($this->ch === null) {
             throw new RequestNotSentException();
         }
@@ -274,6 +282,9 @@ class Client
      */
     public function json(): ?array
     {
+        if ($this->response instanceof Response) {
+            return json_decode($this->response->body(), true);
+        }
         if ($this->ch === null) {
             throw new RequestNotSentException();
         }

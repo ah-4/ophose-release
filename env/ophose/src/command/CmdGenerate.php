@@ -42,7 +42,6 @@ class CmdGenerate extends Command {
             echo clr('&red;An error occurred while generating the resource: ' . $e->getMessage());
             return;
         }
-        
     }
 
 }

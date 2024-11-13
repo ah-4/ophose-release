@@ -2,7 +2,9 @@
 
 use Ophose\Cookie;
 
-header("Access-Control-Allow-Origin: *");
+if(!defined('TEST_MODE') || !TEST_MODE) {
+    header("Access-Control-Allow-Origin: *");
+}
 
 $SECURITY_SESSION_TTL_IN_MINUTES = 1440; // 24 hours
 

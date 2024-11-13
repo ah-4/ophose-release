@@ -43,6 +43,7 @@ class Env
     private $envPath = null;
     private $envEndpoints = [];
     private $envCommands = [];
+    private $envMiddlewares = [];
 
     /**
      * Returns the configuration of the environment.
@@ -90,7 +91,7 @@ class Env
 
         // Handle not found endpoint error
         if(!$envEndpoint) {
-            Response::json([
+            return response()->json([
                 "error" => "No such endpoint $endpoint"
             ], 400);
         }
@@ -100,14 +101,15 @@ class Env
         $secureKey = getallheaders()["X-Secure-Key"] ?? null;
         if ($envEndpoint["csrf"] &&
             ($requestCSRFToken == null || $requestCSRFToken !== Cookie::get("CSRF_TOKEN")) &&
-            ($secureKey == null || $secureKey !== configuration()->get("secure_key"))
+            ($secureKey == null || $secureKey !== configuration()->get("secure_key")) &&
+            (!defined('TEST_MODE') || !TEST_MODE)
         ) {
-            Response::json(["error" => "CSRF Token not valid."], 403);
+            return response()->json(["error" => "CSRF Token not valid."], 403);
         }
 
         // Check request method
         if(!empty($envEndpoint["methods"]) && !in_array("*", $envEndpoint["methods"]) && !in_array($_SERVER["REQUEST_METHOD"], $envEndpoint["methods"])) {
-            Response::json(["error" => "Invalid request method"], 400);
+            return response()->json(["error" => "Invalid request method"], 400);
         }
 
         // Check required parameters
@@ -115,7 +117,7 @@ class Env
         if($_SERVER["REQUEST_METHOD"] == "GET") {
             foreach($envEndpoint["required"] as $required) {
                 if(!isset($arrayToCheck[$required])) {
-                    Response::json(["error" => "Missing required parameter $required"], 400);
+                    return response()->json(["error" => "Missing required parameter $required"], 400);
                 }
             }
         }
@@ -131,6 +133,7 @@ class Env
         }
         $params = $this->processAutofrom($callback, $params);
         $this->processAttributes($callback, $params);
+        if(Response::getLastResponse()) return;
         call_user_func_array($callback, $params);
     }
 
@@ -281,6 +284,28 @@ class Env
      * @return void
      */
     public function onInstall() {
+        return;
+    }
+
+
+    /**
+     * Add a middleware to the environment.
+     * 
+     * @param string $request_path the request path expression (e.g. /post/upload)
+     * @param Closure $callback the callback (should return)
+     * @return void
+     */
+    public function middleware(string $request_path, Closure $callback) {
+        $this->envMiddlewares[$request_path] = $callback;
+    }
+
+    /**
+     * This function is called when the middlewares of a request are requested.
+     *  It could be overriden by your environment.
+     * 
+     * @return void
+     */
+    public function middlewares() {
         return;
     }
 

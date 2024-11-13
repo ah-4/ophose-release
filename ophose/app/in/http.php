@@ -1,11 +1,14 @@
 <?php
 
+use function Ophose\response;
+
 require_once(__DIR__ . '/../src/autoload.php');
 
 use Ophose\Response;
+use Ophose\Environment\EnvRequestProcessor;
 
 // Prevent directory traversal
-if(strpos($_SERVER['REQUEST_URI'], "..") !== false) Response::raw("You may not access this file", 403);
+if(strpos($_SERVER['REQUEST_URI'], "..") !== false) response()->raw("You may not access this file", 403);
 
 /**
  * @var string The sanitized request URL (without the query string)
@@ -41,71 +44,70 @@ function isTargetRequest(string $shouldStartsWith) {
 // FORBIDDEN EXTENSIONS
 $FORBIDDEN_EXTENSIONS = ["oconf", "local", "htaccess"];
 foreach($FORBIDDEN_EXTENSIONS as $ext) {
-    if(str_ends_with(REQUEST_HTTP_URL, "." . $ext) && file_exists(ROOT . REQUEST_HTTP_URL)) Response::raw("You may not access this file", 403);
+    if(str_ends_with(REQUEST_HTTP_URL, "." . $ext) && file_exists(ROOT . REQUEST_HTTP_URL)) response()->raw("You may not access this file", 403);
 }
 
 // ENVRIONMENT REQUEST
 if(isTargetRequest('/@env/') || isTargetRequest('/@/') || isTargetRequest('/@api/') || isTargetRequest('/api/')) {
     // Environment request as ('/@env/' + envName + '/' + endpoint)
-    define('ENV_REQUEST', 'API');
-    include_once(__DIR__ . '/../src/rest/env/env.php');
-    Response::json(["message" => "End of the request."], 500);
-    die();
+    (new EnvRequestProcessor($REQUEST_FIXED_URL, 'API'))->run();
+    response()->json(["message" => "End of the request."], 500);
+    Response::sendLastResponseAndDie();
 }
 
 // DEPENDENCY REQUEST
 if(isTargetRequest('/@dep/')) {
     // Dependency request as ('/@dep/' + dependency)
     $REQUEST_FILE_PATH = OPHOSE_APP_PATH . 'dependencies/' . $REQUEST_FIXED_URL;
-    Response::file($REQUEST_FILE_PATH);
-    die();
+    response()->file($REQUEST_FILE_PATH);
+    Response::sendLastResponseAndDie();
 }
 
 // OPHOSE JAVASCRIPT REQUEST
 if(isTargetRequest('/@ojs/')) {
     // Ophose JavaScript request as ('/@ojs/' + ophoseFile)
     $REQUEST_FILE_PATH = OPHOSE_PATH . 'js/' . $REQUEST_FIXED_URL;
-    Response::file($REQUEST_FILE_PATH);
-    die();
+    response()->file($REQUEST_FILE_PATH);
+    Response::sendLastResponseAndDie();
 }
 
 // COMPONENT REQUEST
 if(isTargetRequest('/@component/')) {
     // Component request as ('/@component/' + ophoseFile)
     $REQUEST_FILE_PATH = ROOT . 'components/' . $REQUEST_FIXED_URL;
-    Response::file($REQUEST_FILE_PATH);
-    die();
+    response()->file($REQUEST_FILE_PATH);
+    Response::sendLastResponseAndDie();
 }
 
 // COMPONENT REQUEST
 if(isTargetRequest('/@module/')) {
     // Module request as ('/@module/' + ophoseFile)
     $REQUEST_FILE_PATH = ROOT . 'modules/' . $REQUEST_FIXED_URL;
-    Response::file($REQUEST_FILE_PATH);
-    die();
+    response()->file($REQUEST_FILE_PATH);
+    Response::sendLastResponseAndDie();
 }
 
 // COMPONENT REQUEST
 if(isTargetRequest('/@envjs/')) {
     // Environment JS request as ('/@envjs/' + env + [file])
     define('ENV_REQUEST', 'JS');
-    include_once(__DIR__ . '/../src/rest/env/env.php');
-    die();
+    (new EnvRequestProcessor($REQUEST_FIXED_URL, 'JS'))->run();
+    Response::sendLastResponseAndDie();
 }
 
 // PAGE QUERY REQUEST
 if(REQUEST_HTTP_URL == '/@query/' && REQUEST_METHOD == 'POST') {
     // Page query request
     include_once(__DIR__ . '/../src/rest/router/get_url_queries.php');
-    die();
+    Response::sendLastResponseAndDie();
 }
 
 // PAGE REQUEST
 if(isTargetRequest('/@pages/') || isTargetRequest('/pages/')) {
     // Page request as ('/@pages/' + pageName)
     $REQUEST_FILE_PATH = ROOT . "pages" . DIRECTORY_SEPARATOR . $REQUEST_FIXED_URL;
-    Response::file($REQUEST_FILE_PATH);
-    die();
+    response()->file($REQUEST_FILE_PATH);
+    Response::sendLastResponseAndDie();
 }
 
 // PUBLIC REQUEST
@@ -114,13 +116,15 @@ if(isTargetRequest('/public/') || isTargetRequest('/@public/')) {
     $REQUEST_FILE_PATH = ROOT . 'public/' . $REQUEST_FIXED_URL;
     if(file_exists($REQUEST_FILE_PATH) && !is_dir($REQUEST_FILE_PATH) && !str_ends_with($REQUEST_FIXED_URL, ".php")) {
         header('Cache-Control: max-age=31536000');
-        Response::file($REQUEST_FILE_PATH);
+        response()->file($REQUEST_FILE_PATH);
+        Response::sendLastResponseAndDie();
     }
-    return Response::raw("File not found", 404);
+    response()->raw("File not found", 404);
+    Response::sendLastResponseAndDie();
 }
 if(!empty(trim(REQUEST_HTTP_URL, "\/\\\n\r\t\v\x00")) && file_exists(ROOT . 'public/' . REQUEST_HTTP_URL) && !is_dir(ROOT . 'public/' . REQUEST_HTTP_URL)) {
-    Response::file(ROOT . 'public/' . REQUEST_HTTP_URL);
-    die();
+    response()->file(ROOT . 'public/' . REQUEST_HTTP_URL);
+    Response::sendLastResponseAndDie();
 }
 
 // PAGES REQUEST

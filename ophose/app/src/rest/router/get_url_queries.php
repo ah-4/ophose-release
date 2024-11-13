@@ -1,5 +1,6 @@
 <?php
 use Ophose\Response;
+use function Ophose\response;
 
 /**
  * Returns true if file at path exists (admetting it ends with '.js') or path added with '.php' exists
@@ -69,4 +70,4 @@ if(is_dir(ROOT . $url)) {
 }
 
 $rest_response = getURLPath($url);
-Response::json($rest_response);
+response()->json($rest_response);
