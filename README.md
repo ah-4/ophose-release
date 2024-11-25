@@ -3,9 +3,9 @@
 [![GPL License Alternative](https://img.shields.io/badge/licence-GPL_Licence_Alternative-blue)](https://ophose.ah4.fr/licence)
 [![Latest Version](https://img.shields.io/github/v/release/ah-4/ophose-release.svg)](https://github.com/ah4/ophose-release/releases)
 
-# [OPHOSE - Visit the the official website](https://ophose.ah4.fr/)
+# [OPHOSE - Visit the the official website](https://ophose.dev/)
 
-Ophose is a simple, lightweight, and flexible framework for building web applications. It provides a set of reusable components and utilities to help you create modern, responsive, and accessible user interfaces. It also offers a rich set of features for managing your backend services, state, and data.
+Ophose is a simple, lightweight, and flexible framework for building web applications. It handles both front-end and back-end, and you can even download community resources such as as components or environments.
 
 ## Table of Contents
 
@@ -17,17 +17,17 @@ Ophose is a simple, lightweight, and flexible framework for building web applica
 
 ## Installation
 
-To get started with it, simply clone the repository and run the following commands:
+To get started with it, simply clone this repository, then if you want to get started faster, create a free account on [Ophose official website](https://ophose.dev) and get your API Key then, put it in your project.oconf then finally type:
 
 ```bash
 php ocl ophose install
 ```
 
-This will install all the necessary dependencies and set up your project. You can then start building your application using the provided components and utilities.
+This will install all the dependencies assigned in your `project.oconf` file. You can then start building your application using the provided components and utilities.
 
 ## Usage
 
-You can check out the [the full tutorial here](https://ophose.ah4.fr/docs). But, here's a quick example to get you started: 
+You can check out the [the full tutorial here](https://ophose.dev/tutorial/getting-started). Here's a quick example to get you started: 
 
 ```javascript
 class YourComponent extends Ophose.Component {
@@ -40,10 +40,10 @@ class YourComponent extends Ophose.Component {
     }
 
     render() {
-        return _('div',
-            _('h1', 'Hello, World!'),
-            _('p', 'This is a simple example of using Ophose.'),
-            _('button', { onclick: this.handleClick }, 'Click me')
+        return _div(
+            _h1('Hello, World!'),
+            _p('This is a simple example of using Ophose.'),
+            _button({ onclick: this.handleClick }, 'Click me')
         ),
     }
 }
@@ -53,9 +53,9 @@ This will create a simple component that renders a heading, a paragraph, and a b
 
 ## Documentation
 
-Link to the full documentation of Ophose. Include detailed guides, API reference, and any other relevant documentation resources.
+Link to the full back-end documentation of Ophose. Include detailed guides, API reference, and any other relevant documentation resources.
 
-[Link to Documentation](https://ophose2.ah4.fr/docs)
+[Link to Documentation](https://ophose.dev/docs)
 
 ## Contributing
 
@@ -63,4 +63,4 @@ Please make sure to report any issues or bugs you find in the framework. You can
 
 ## License
 
-This project is licensed under the GPL License Alternative - see the [LICENSE](https://ophose.ah4.fr/licence) file for details.
+This project is licensed under the GPL License Alternative - see the [LICENSE](https://ophose.dev/licence) page for details.
