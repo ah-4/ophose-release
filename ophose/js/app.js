@@ -159,7 +159,16 @@ class ___app___ {
             let pageNode = ___render___.toNode(loadedPage);
             loadedPage.onLoad();
 
-            ___app___.__$baseAppNode.replaceWith(pageNode);
+            if(___app___.__$baseAppNode instanceof DocumentFragment) {
+                let list = ___app___.__$baseAppNode.oList;
+                for(let i = 1; i < list.length; i++) {
+                    list[i].remove();
+                }
+                list[0].replaceWith(pageNode);
+            } else {
+                ___app___.__$baseAppNode.replaceWith(pageNode);
+            }
+            
             ___app___.__$baseAppNode = pageNode;
             loadedPage.__applyStyle();
 

@@ -12,7 +12,7 @@ class Live {
                 if(thisArg[key] instanceof Live) {
                     thisArg[key].set(value[key]);
                 } else {
-                    thisArg[key] = new Live(value[key]);
+                    thisArg[key] = new Live(value[key]).setParent(thisArg);
                 }
                 thisArg.__objectUsedKeys.add(key);
             }
@@ -51,6 +51,17 @@ class Live {
      */
     keepValues(value) {
         this.__keepValuesOnUpdateIfNotInObject = value;
+        return this;
+    }
+
+    /**
+     * Sets the parent of the live variable
+     * 
+     * @param {Live} parent the parent
+     * @returns the live variable
+     */
+    setParent(parent) {
+        this.__parent = parent;
         return this;
     }
 
@@ -230,6 +241,16 @@ class Live {
         }
         this.set(this.__value - value);
     }
+
+    removeAt(index) {
+        if(Array.isArray(this.__value)) {
+            this.__value.splice(index, 1);
+            this.set(this.__value);
+            return;
+        }
+        dev.error('Cannot remove at index from a non-array value', this.__value);
+    }
+
     /**
      * Called when value changes and process needed updates
      * @param {*} liveVar the live variable
@@ -239,6 +260,7 @@ class Live {
     static __onValueChange(liveVar, newValue, oldValue) {
         for (let callback of liveVar.__callbackListeners) callback(newValue, oldValue);
         for (let component of liveVar.__placedStyleComponents) component.___reloadStyle();
+        if(liveVar.__parent) Live.__onValueChange(liveVar.__parent, liveVar.__parent.__value, liveVar.__parent.__value);
     }
 
     /**
@@ -540,6 +562,18 @@ class Live {
             return;
         }
         return this.__value.lastIndexOf(value);
+    }
+
+    /**
+     * Clears the array
+     * @returns void
+     */
+    clear() {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot clear a non-array value', this.__value);
+            return;
+        }
+        this.set([]);
     }
 
     // #endregion

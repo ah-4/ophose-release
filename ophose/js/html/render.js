@@ -285,20 +285,23 @@ function _(tag, ...propsOrChildren) {
 const observer = new MutationObserver((mutationsList, observer) => {
   for (const mutation of mutationsList) {
     if(mutation.type === 'childList') {
-        for (const node of mutation.addedNodes) {
-            if(node.o) {
-                ___render___.__placedOphoseInstances.push(node.o);
-                node.o.onPlace(node);
-            }
+        let update = (node) => {
+            if(node.o) node.o.onPlace(node);
+            if(!node.children) return;
+            for(let child of node.children) update(child);
         }
+
+        for (const node of mutation.addedNodes) update(node);
     }
     // On remove
     if(mutation.removedNodes.length > 0) {
-        for (const node of mutation.removedNodes) {
-            if(node.o) {
-                node.o.__processRemove();
-            }
+        let update = (node) => {
+            if(node.o) node.o.__processRemove();
+            if(!node.children) return;
+            for(let child of node.children) update(child);
         }
+
+        for (const node of mutation.removedNodes) update(node);
     }
   }
 });
