@@ -18,7 +18,7 @@ class CmdBuild extends Command
             $path = OPHOSE_PATH . "/js/" . $file;
             $content .= file_get_contents($path) . ";";
         }
-        $content = "const dev = {error:()=>{}};" . $content;
+        $content = "const dev = {error:()=>{},log:()=>{}};" . $content;
         $content .= ";__OPH_APP_BUILD__=true;";
         return $content;
     }
