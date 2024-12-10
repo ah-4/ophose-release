@@ -160,6 +160,7 @@ class CmdPublish extends Command
                 if($this->resource_type == 'component' && pathinfo($file->getFilename(), PATHINFO_EXTENSION) != 'js') continue;
                 $filePath = $file->getRealPath();
                 $relativePath = substr($filePath, strlen($this->resource_path) + 1);
+                $relativePath = str_replace('\\', '/', $relativePath);
                 $zip->addFile($filePath, $relativePath);
             }
         }
