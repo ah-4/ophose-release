@@ -1,6 +1,10 @@
 <?php
 
+use Ophose\Http\MiddlewareHandler;
+use Ophose\Http\Router;
+use Ophose\Request;
 use function Ophose\response;
+use function Ophose\Util\shared;
 
 require_once(__DIR__ . '/../src/autoload.php');
 
@@ -96,9 +100,28 @@ if(isTargetRequest('/@envjs/')) {
 }
 
 // PAGE QUERY REQUEST
-if(REQUEST_HTTP_URL == '/@query/' && REQUEST_METHOD == 'POST') {
+if(REQUEST_HTTP_URL == '/@resolve/' && REQUEST_METHOD == 'POST') {
     // Page query request
-    include_once(__DIR__ . '/../src/rest/router/get_url_queries.php');
+    $url = Request::input('url');
+    $middlewareHandler = new MiddlewareHandler($url);
+    // Default middleware
+    include_once(ROOT . 'app/middleware.php');
+    $middlewareHandler->addMiddleware(AppMiddleware::class);
+
+    // Environments middleware
+    foreach(shared('middlewares', true) as $middleware) {
+        $middlewareHandler->addMiddleware(include $middleware);
+    }
+
+    if(!$middlewareHandler->handle()) {
+        response()->json(["message" => "The URL has already been handled"], 400);
+        Response::sendLastResponseAndDie();
+    }
+
+    $route = new Router($middlewareHandler->url());
+    $data = $route->getResolverData();
+    $data['data'] = $middlewareHandler->getData();
+    response()->json($data);
     Response::sendLastResponseAndDie();
 }
 

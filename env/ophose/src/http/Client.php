@@ -223,6 +223,7 @@ class Client
         curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, $this->method);
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
         if ($this->body !== null) {
+            if(is_array($this->body)) $this->body = json_encode($this->body);
             curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->body);
         }
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, $this->headers);

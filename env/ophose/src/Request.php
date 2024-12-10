@@ -108,4 +108,13 @@ class Request {
         return $default;
     }
 
+    /**
+     * Returns the request URI (e.g. '/path/to/resource')
+     *
+     * @return string The request URI
+     */
+    public static function url() : string {
+        return $_SERVER['REQUEST_URI'];
+    }
+
 }

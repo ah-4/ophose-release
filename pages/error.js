@@ -2,8 +2,6 @@ class SimpleErrorDisplay extends Ophose.Component {
 
     constructor(props) {
         super(props);
-
-        app.setTitle('Error | Ophose');
     }
 
     style() {
@@ -18,11 +16,10 @@ class SimpleErrorDisplay extends Ophose.Component {
     }
 
     render() {
-        return {_: 'div', children: [
-            _('h1', '404'),
-            _('p', 'This page may not exist')
-        ]
-        }
+        return _div(
+            _h1('404'),
+            _p('This page may not exist')
+        )
     }
 
 }
@@ -31,10 +28,8 @@ class PageError extends Ophose.Page {
 
     constructor() {
         super();
-    }
 
-    onLoad() {
-        ___app___.setTitle('404 - This page may not exist');
+        app.setTitle('404 - This page may not exist');
     }
 
     style() {
@@ -50,11 +45,9 @@ class PageError extends Ophose.Page {
     }
 
     render() {
-        return {
-            _: 'div',
-            className: 'page_error',
-            children: new SimpleErrorDisplay()
-        }
+        return _div({className: 'page_error'},
+            new SimpleErrorDisplay()
+        )
     }
 
 }

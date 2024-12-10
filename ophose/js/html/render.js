@@ -141,7 +141,6 @@ class ___render___ {
             }
             giveAttrsAndEventsToNode(oph.props, nodeToGiveAttrsAndEvents);
             node.o = oph;
-            oph.__place(node);
             return node;
         }
 
@@ -286,22 +285,28 @@ const observer = new MutationObserver((mutationsList, observer) => {
   for (const mutation of mutationsList) {
     if(mutation.type === 'childList') {
         let update = (node) => {
-            if(node.o) node.o.onPlace(node);
+            if(node.o) {
+                node.o.__processRemove();
+                node.o.__place(node);
+                node.o.onPlace(node);
+            }
             if(!node.children) return;
-            for(let child of node.children) update(child);
+            for(let child of node.children) {
+                update(child);
+            }
         }
 
-        for (const node of mutation.addedNodes) update(node);
+        for (const node of mutation.addedNodes) {
+            update(node);
+        }
     }
     // On remove
     if(mutation.removedNodes.length > 0) {
-        let update = (node) => {
-            if(node.o) node.o.__processRemove();
-            if(!node.children) return;
-            for(let child of node.children) update(child);
+        for (const node of mutation.removedNodes) {
+            if(node.o) {
+                node.o.__processRemove();
+            }
         }
-
-        for (const node of mutation.removedNodes) update(node);
     }
   }
 });

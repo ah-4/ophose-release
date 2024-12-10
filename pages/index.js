@@ -93,24 +93,24 @@ class PageIndex extends Ophose.Page {
         let input = live('AH4');
 
         return new Wrapper({children: [
-            _('img', {src: '/ophose.png', alt: 'placeholder', draggable: false}),
-            _('h1', 'Welcome ', _('i', input), ', to your application'),
-            _('div', {className: 'links'},
-                _('a', {href: 'https://ophose.ah4.fr/tutorials'}, 'Getting started'),
-                _('a', {href: 'https://ophose.ah4.fr/docs'}, 'Documentation'),
-                _('a', {href: 'https://ophose.ah4.fr/store'}, 'Resources'),
-                _('a', {onclick: () => {
+            _img({src: '/ophose.png', alt: 'placeholder', draggable: false}),
+            _h1('Welcome ', _i(input), ', to your application'),
+            _div({className: 'links'},
+                _a({href: 'https://ophose.ah4.fr/tutorials'}, 'Getting started'),
+                _a({href: 'https://ophose.ah4.fr/docs'}, 'Documentation'),
+                _a({href: 'https://ophose.ah4.fr/store'}, 'Resources'),
+                _a({onclick: () => {
                     let theme = Live.local("theme");
                     theme.set(theme.value == "dark" ? "light" : "dark");
                 }}, 'Toggle theme')
             ),
-            _('input', {
+            _input({
                 placeholder: 'Type something...',
                 watch: input
             }),
-            _('p', {className: 'description'},
+            _p({className: 'description'},
                 'Ophose (by ',
-                _('a', {id: 'ah4', href: 'https://ah4.fr/'}, 'AH4'),
+                _a({id: 'ah4', href: 'https://ah4.fr/'}, 'AH4'),
                 ') is a simple and powerful framework to create web applications. It is based on the concept of components and is designed to be easy to use and to learn. It is also very flexible and can be used to create any kind of web application.')
         ]})
     }

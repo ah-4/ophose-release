@@ -37,166 +37,57 @@ class ___app___ {
     }
 
     /**
-     * Loads ophose page at requested URL
-     * @param {*} requestUrl requested URL
+     * Goes to a page
+     * @param {string} url the page URL
+     * @returns {Promise} the promise
      */
-    static __loadAt(requestUrl) {
-
-        /**
-         * Returns the URL with pages prefix
-         * @param {string} url the URL
-         * @returns the URL with pages prefix
-         */
-        let prepareUrlWithPagesPrefix = (url) => {
-            if (url.startsWith('/')) url = url.substring(1, url.length);
-            if (url.endsWith('/')) url = url.substring(0, url.length - 1);
-            return '/pages/' + url;
-        }
-
-        let scrollToUrlId = (ms) => {
-            setTimeout(() => {
-                if(!window.location.hash) {
-                    window.scrollTo(0, 0);
-                    return;
-                };
-                let id = window.location.hash.substring(1, window.location.hash.length);
-                let element = document.getElementById(id);
-                if (element) {
-                    element.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                }else{
-                    window.scrollTo(0, 0);
-                }
-            }, ms);
-        }
-
+    static async __go(url) {
         ___app___.__loadBase();
-        ___event___.callEvent("onPageLoad", requestUrl);
+        url = url.split("#")[0].split("?")[0];
+        if(url == ___app___.__currentURL) return null;
+        return await fetch('/@resolve/', {
+            method: 'POST',
+            body: JSON.stringify({url})
+        })
+        .then(r => r.json())
+        .then(async r =>{
+            let js = r.js;
+            let query = r.query;
+            let url = r.url;
+            let data = r.data;
+            let get = window.location.search.substring(1).split('&').map(e => e.split('=')).reduce((a, b) => {a[b[0]] = b[1]; return a}, {});
 
-        ___app___.CURRENT_URL = requestUrl;
-        requestUrl = prepareUrlWithPagesPrefix(requestUrl);
+            if(!___app___.__loadedPages[js]) {
+                let script = await fetch('/pages/' + js).then(r => r.text());
+                eval(`${script}`);
+                ___app___.__loadedPages[js] = {cls: ___app___.__getShared()};
+            }
 
-        let urlAndQuery = requestUrl.split("?");
-        let urlFullPath = urlAndQuery[0].split('#')[0];
-        let urlPath = urlAndQuery[0].split('/');
-        if (urlPath[urlPath.length - 1] == "") {
-            urlPath.pop(urlPath.length - 1);
-        }
-
-        if (requestUrl == "/pages/") {
-            urlFullPath = "/pages/index";
-        }
-        
-        if(___app___.__currentURL == urlFullPath) {
-            scrollToUrlId(0);
-            return;
-        } 
-        ___app___.__currentURL = urlFullPath;
-
-        // Returns fixed JSON response
-        let getUrlQueries = () => {
-            let result;
-            $.ajax({
-                type: 'POST',
-                url: '/@query/',
-                async: false,
-                data: {url: urlFullPath},
-                success: function (r) {
-                    result = r;
-                }
+            let c = ___app___.__loadedPages[js]['cls'];
+            let page = new c({
+                query,
+                url,
+                data,
+                get
             });
-            return result;
-        }
-        let jsonResponse = getUrlQueries();
-        
-
-        let urlExists = jsonResponse["valid"];
-        let urlRequest = jsonResponse["path"];
-
-        // Define URL queries
-        let urlQueries = {};
-        urlQueries.query = jsonResponse["variables"];
-        if(urlAndQuery.length == 2) {
-            urlQueries.get = {};
-            let urlQueriesArray = urlAndQuery[1].split('#')[0].split("&");
-            for (let urlQuery of urlQueriesArray) {
-                let urlQueryArray = urlQuery.split("=");
-                urlQueries.get[urlQueryArray[0]] = urlQueryArray[1];
-            }
-        }
-
-        if (!urlExists && urlFullPath != "error") {
-            ___app___.__loadAt("error");
-            return;
-        }
-        
-
-        let Page = undefined;
-
-        let loadPage = (PageClass) => {
-
-            if(!___app___.__loadedPages[urlRequest]) ___app___.__loadedPages[urlRequest] = {};
-            ___app___.__loadedPages[urlRequest]["pageClass"] = PageClass;
-
-            let loadedPage = new PageClass(urlQueries);
-            for (let ophoseInstance of ___render___.__placedOphoseInstances) {
-                let node = ophoseInstance.__node;
-                if(!___app___.__$baseAppNode.contains(node)) continue;
-                ophoseInstance.__processRemove();
-            }
-            ___render___.__placedOphoseInstances = [];
-
-            loadedPage.onCreate();
-
-            // Check if page has been redirected
-            if (loadedPage.__redirected) {
-                ___app___.__loadAt(loadedPage.__redirected);
-                return;
-            }
-
-            // Load content
-            let pageNode = ___render___.toNode(loadedPage);
-            loadedPage.onLoad();
+            let node = ___render___.toNode(page);
 
             if(___app___.__$baseAppNode instanceof DocumentFragment) {
                 let list = ___app___.__$baseAppNode.oList;
                 for(let i = 1; i < list.length; i++) {
                     list[i].remove();
                 }
-                list[0].replaceWith(pageNode);
+                list[0].replaceWith(node);
             } else {
-                ___app___.__$baseAppNode.replaceWith(pageNode);
+                ___app___.__$baseAppNode.replaceWith(node);
             }
-            
-            ___app___.__$baseAppNode = pageNode;
-            loadedPage.__applyStyle();
 
-            ___app___.__pageInstance = loadedPage;
+            ___app___.__currentURL = url;
+            ___app___.__$baseAppNode = node;
+            page.__applyStyle();
 
-            loadedPage.__setNode(pageNode);
-            page = loadedPage;
-            scrollToUrlId(100);
-        }
-
-        if (urlFullPath != "error" && ___app___.__loadedPages[urlRequest]) {
-            let pageClass = ___app___.__loadedPages[urlRequest]['pageClass'];
-            loadPage(pageClass);
-            return;
-        }
-
-        // Page loading
-        ___script___.run(urlRequest, false,
-            () => {
-                Page = ___app___.__getShared();
-                loadPage(Page);
-            },
-            () => {
-                if (urlFullPath == "error") return;
-                ___app___.__loadAt("error");
-            }
-        );
-        
+            return r;
+        })
     }
 
     /**

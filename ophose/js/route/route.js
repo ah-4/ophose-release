@@ -12,10 +12,16 @@ class ___route___ {
             window.location = requestUrl;
             return;
         }
-        ___app___.__loadAt(requestUrl);
-        if (requestUrl != ___app___.__currentURL) {
+        if(requestUrl[0] == '#') {
+            document.querySelector(requestUrl)?.scrollIntoView({behavior: 'smooth'});
             window.history.pushState(requestUrl, '', requestUrl);
         }
+        ___app___.__go(requestUrl).then((r) => {
+            // Return if history is already the same
+            if(!r) return;
+            if (r.url === window.location.pathname) return;
+            window.history.pushState(r.url, '', r.url);
+        });
     }
 
 }

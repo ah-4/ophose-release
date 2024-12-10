@@ -37,5 +37,5 @@ class ___event___ {
 // History listener
 window.addEventListener("popstate", (event) => {
     if (event.state === null) return;
-    ___app___.__loadAt(event.state);
+    ___app___.__go(event.state);
 });

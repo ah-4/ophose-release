@@ -9,18 +9,19 @@ class ___env___ {
      * @param {string} endpoint the environment and its endpoint (for example: /myEnv/myEndpoint)
      * @param {Array} data post data
      */
-    static async post(endpoint, data = null) {
+    static async post(endpoint, data = null, options = null) {
 
         let jsonResult = null;
         let error = false;
         if(data instanceof Live) {
             data = data.value;
         }
-        let options = {
+        options = {
             method: 'POST',
             headers: {},
             useDirectives: true,
-            ...(data && data.options) ?? {}
+            toFormData: false,
+            ...options
         }
         if(data && data.options) data.options = undefined;
         if(options.toFormData) {

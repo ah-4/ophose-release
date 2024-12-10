@@ -3,7 +3,9 @@
 namespace Ophose;
 
 use Closure;
+use Ophose\Environment\EnvEndpoint;
 use Ophose\Command\Command;
+use Ophose\Environment\Attributes\AttributePolicy;
 use ReflectionFunction;
 use ReflectionMethod;
 
@@ -59,7 +61,7 @@ class Env
         $e = $this->envEndpoints[strtolower($endpoint)] ?? null;
         if($e) return $e;
         foreach($this->envEndpoints as $envEndpoint) {
-            $envEndpointInfos = explode('/', $envEndpoint["endpoint"]);
+            $envEndpointInfos = explode('/', $envEndpoint->getEndpoint());
             $endpointInfos = explode('/', $endpoint);
             if(count($envEndpointInfos) != count($endpointInfos)) continue;
             $params = [];
@@ -76,8 +78,8 @@ class Env
                 break;
             }
             if($match) {
-                $envEndpoint["params"] = $params;
-                return $envEndpoint;
+                $envEndpoint->params($params);
+                return $envEndpoint->lock();
             }
         }
     }
@@ -99,7 +101,7 @@ class Env
         // Check CSRF Token if required
         $requestCSRFToken = getallheaders()["X-Csrf-Token"] ?? null;
         $secureKey = getallheaders()["X-Secure-Key"] ?? null;
-        if ($envEndpoint["csrf"] &&
+        if ($envEndpoint->requiresCsrf() &&
             ($requestCSRFToken == null || $requestCSRFToken !== Cookie::get("CSRF_TOKEN")) &&
             ($secureKey == null || $secureKey !== configuration()->get("secure_key")) &&
             (!defined('TEST_MODE') || !TEST_MODE)
@@ -108,23 +110,13 @@ class Env
         }
 
         // Check request method
-        if(!empty($envEndpoint["methods"]) && !in_array("*", $envEndpoint["methods"]) && !in_array($_SERVER["REQUEST_METHOD"], $envEndpoint["methods"])) {
+        if(!empty($envEndpoint->getMethods()) && !in_array("*", $envEndpoint->getMethods()) && !in_array($_SERVER["REQUEST_METHOD"], $envEndpoint->getMethods())) {
             return response()->json(["error" => "Invalid request method"], 400);
         }
 
-        // Check required parameters
-        $arrayToCheck = $_SERVER["REQUEST_METHOD"] == "GET" ? $_GET : $_POST;
-        if($_SERVER["REQUEST_METHOD"] == "GET") {
-            foreach($envEndpoint["required"] as $required) {
-                if(!isset($arrayToCheck[$required])) {
-                    return response()->json(["error" => "Missing required parameter $required"], 400);
-                }
-            }
-        }
-
         // Run callback
-        $params = $envEndpoint["params"] ?? [];
-        $callback = $envEndpoint["callback"];
+        $params = $envEndpoint->getParams() ?? [];
+        $callback = $envEndpoint->getCallback();
         if(is_array($callback)) {
             $class = $callback[0];
             if(class_exists($class)) {
@@ -132,6 +124,7 @@ class Env
             }
         }
         $params = $this->processAutofrom($callback, $params);
+        if(Response::getLastResponse()) return;
         $this->processAttributes($callback, $params);
         if(Response::getLastResponse()) return;
         call_user_func_array($callback, $params);
@@ -169,8 +162,19 @@ class Env
     private function processAttributes($callback, $params) {
         $reflection = $this->getReflection($callback);
         $attributes = $reflection->getAttributes();
+        $parameters = $reflection->getParameters();
+        $p = [];
+        for($i = 0; $i < count($parameters); $i++) {
+            $p[$parameters[$i]->getName()] = $params[$i];
+        }
+        $attributePolicy = new AttributePolicy($p);
         foreach($attributes as $attribute) {
-            $attribute = new ($attribute->getName())(...$params);
+            $attribute = $attribute->newInstance();
+            if(is_subclass_of($attribute, 'Ophose\Environment\Attributes\Attr')) {
+                $attribute->setPolicy($attributePolicy);
+                $attribute->check();
+            }
+            if(Response::getLastResponse()) return;
         }
         return $params;
     }
@@ -223,27 +227,17 @@ class Env
     /**
      * This function is used to register an endpoint.
      * 
-     * @param string $endpoint the endpoint
-     * @param callable $callback the callback
-     * @param bool $csrf if the endpoint requires the CSRF token
-     * @param array $methods the methods accepted by the endpoint
-     * @param array $required the required parameters
-     * @return void
+     * @param string $endpoint the endpoint (e.g. 'create' or 'edit/_id')
+     * @param array|callable|string $callback the callback
+     * @return EnvEndpoint the environment endpoint
      */
     protected final function endpoint(
         string $endpoint,
-        array|string|callable $callback,
-        bool $csrf = false,
-        array $methods = [],
-        array $required = []
+        array|callable|string $callback
     ) {
-        $this->envEndpoints[strtolower($endpoint)] = [
-            "endpoint" => $endpoint,
-            "callback" => $callback,
-            "csrf" => $csrf,
-            "methods" => $methods,
-            "required" => $required
-        ];
+        $e = new EnvEndpoint($endpoint, $callback);
+        $this->envEndpoints[strtolower($endpoint)] = $e;
+        return $e;
     }
 
     /**

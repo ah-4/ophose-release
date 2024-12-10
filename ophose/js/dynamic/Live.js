@@ -155,6 +155,10 @@ class Live {
         Live.__onValueChange(this, this.__value, oldValue);
     }
 
+    refresh() {
+        Live.__onValueChange(this, this.__value, this.__value);
+    }
+
     /**
      * Updates the value with a callback
      * @param {function} callback the callback (takes the current value as argument and should return the new value)
@@ -194,6 +198,10 @@ class Live {
      * @returns the live variable
      */
     min(min) {
+        if(min instanceof Live) {
+            min.subscribe(() => this.set(this.__value));
+            return this.rule((value) => Math.max(value, min.get()));
+        }
         return this.rule((value) => Math.max(value, min));
     }
 
@@ -203,6 +211,10 @@ class Live {
      * @returns the live variable
      */
     max(max) {
+        if(max instanceof Live) {
+            max.subscribe(() => this.set(this.__value));
+            return this.rule((value) => Math.min(value, max.get()));
+        }
         return this.rule((value) => Math.min(value, max));
     }
 
@@ -590,6 +602,17 @@ class Live {
     }
 
     /**
+     * Returns a either the callback or an anonymous function that returns the value
+     * @param {*} value the value
+     * @returns the callback
+     * @private
+     */
+    valueCallbacked(value) {
+        if(typeof value === 'function') return value;
+        return () => value;
+    }
+
+    /**
      * Returns a dynamic map of the array
      * @param {function} _callback the callback
      * @returns the dynamic map
@@ -609,13 +632,9 @@ class Live {
      * @returns the dynamic if statement
      */
     _if(_trueCallback, _falseCallback) {
-        let valueTrue = _trueCallback;
-        let valueFalse = _falseCallback;
-        if(typeof _trueCallback !== 'function') _trueCallback = () => valueTrue;
-        if(typeof _falseCallback !== 'function') _falseCallback = () => valueFalse;
         return dyn(this, (value) => {
-            if(value) return _trueCallback(value);
-            return _falseCallback(value);
+            if(value) return this.valueCallbacked(_trueCallback)(value);
+            return this.valueCallbacked(_falseCallback)(value);
         });
     }
 
@@ -626,8 +645,33 @@ class Live {
      */
     _switch(_cases) {
         return dyn(this, (value) => {
-            if(_cases[value] === undefined && _cases.default !== undefined) return _cases.default;
-            return _cases[value];
+            if(_cases[value] === undefined && _cases.default !== undefined) return this.valueCallbacked(_cases.default)(value);
+            return this.valueCallbacked(_cases[value])(value);
+        });
+    }
+
+    /**
+     * Returns a dynamic filter of the array
+     * @param {function} _callback the callback
+     * @returns the dynamic filter
+     */
+    _empty(_callback) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot check if empty a non-array value', this.__value);
+            return;
+        }
+        return dyn(this, (value) => {
+            if(value.length === 0) return this.valueCallbacked(_callback)(value);
+        });
+    }
+
+    _notEmpty(_callback) {
+        if(!Array.isArray(this.__value)) {
+            dev.error('Cannot check if not empty a non-array value', this.__value);
+            return;
+        }
+        return dyn(this, (value) => {
+            if(value.length !== 0) return this.valueCallbacked(_callback)(value);
         });
     }
 
@@ -668,12 +712,26 @@ function dyn(...livesAndCallback) {
  * @returns {Live} the live variable
  */
 function live(value) {
-    if (value instanceof Live) return value;
+    if (value instanceof Live) return new Live(value.get());
     return new Live(value);
 }
 
 /**
- * Reacts to live variables when they change
+ * Reacts to live variables when they change (does not execute the callback immediately)
+ * @param  {...any} livesAndCallback the live variables and the callback (last argument)
+ */
+function watchAfter(...livesAndCallback) {
+    let callback = livesAndCallback.pop();
+    for(let live of livesAndCallback) {
+        live.subscribe(async () => {
+            let args = livesAndCallback.map((live) => live.get());
+            callback(...args);
+        });
+    }
+}
+
+/**
+ * Reacts to live variables when they change (also executes the callback immediately)
  * @param  {...any} livesAndCallback the live variables and the callback (last argument)
  */
 function watch(...livesAndCallback) {

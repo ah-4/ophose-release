@@ -5,12 +5,15 @@ class ___page___ extends ___component___ {
 
     /**
      * Page constructor
-     * @param {dict} urlQueries url queries if any (ex: pageId, productId...)
+     * @param {dict} props url queries if any (ex: pageId, productId...)
      */
-    constructor(urlQueries) {
+    constructor(props) {
         super();
-        this.urlQueries = urlQueries;
-        this.__redirected = false;
+        if(!props) props = {};
+        this.query = props.query;
+        this.get = props.get;
+        this.url = props.url;
+        this.data = props.data;
     }
 
     /**

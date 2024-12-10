@@ -22,3 +22,13 @@ function o_auto_add(array &$array, mixed $key, mixed $value) {
         $array[$key][] = $value;
     }
 }
+
+function dig(array $array, string $key, mixed $default = null) {
+    $keys = explode(".", $key);
+    $value = $array;
+    foreach($keys as $k) {
+        if(!array_key_exists($k, $value)) return $default;
+        $value = $value[$k];
+    }
+    return $value;
+}

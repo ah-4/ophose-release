@@ -26,9 +26,6 @@ return new class extends Env {
 
     public function endpoints()
     {
-        $this->endpoint('hello_world', function () {
-            response("Hello, World!");
-        }, true);
+        $this->endpoint('hello_world', fn() => response('Hello, World!'));
     }
-
 };

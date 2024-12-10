@@ -15,6 +15,7 @@ include_once(__DIR__ . "/app/request/security.php");
                 name: "<?php echo configuration()->get("name") ?>",
                 productionMode: <?php echo configuration()->get("production_mod") ? "true" : "false"; ?>,
             };
+            window.history.pushState(window.location.pathname, '', window.location.pathname);
         </script>
         <?php if(configuration()->get("production_mode")) { ?>
             <script src="/app.js"></script>

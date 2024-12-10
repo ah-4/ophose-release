@@ -85,6 +85,7 @@ class Duration {
      */
     public function __toString(): string {
         $seconds = $this->seconds;
+        if($seconds === 0) return "0s";
         $years = floor($seconds / 31536000);
         $seconds -= $years * 31536000;
         $months = floor($seconds / 2628000);
@@ -97,7 +98,7 @@ class Duration {
         $seconds -= $hours * 3600;
         $minutes = floor($seconds / 60);
         $seconds -= $minutes * 60;
-        return ($years > 0 ? $years . "y " : "") . ($months > 0 ? $months . "m " : "") . ($weeks > 0 ? $weeks . "w " : "") . ($days > 0 ? $days . "d " : "") . ($hours > 0 ? $hours . "h " : "") . ($minutes > 0 ? $minutes . "m " : "") . ($seconds > 0 ? $seconds . "s " : "");
+        return ($years > 0 ? $years . "y " : "") . ($months > 0 ? $months . "m " : "") . ($weeks > 0 ? $weeks . "w " : "") . ($days > 0 ? $days . "d " : "") . ($hours > 0 ? $hours . "h " : "") . ($minutes > 0 ? $minutes . "m " : "") . ($seconds > 0 ? $seconds . "s" : "");
     }
 
     /**

@@ -5,18 +5,18 @@ namespace Ophose;
 class Response {
 
     private int $status = 200;
-    private array $headers = [];
+    private ?array $headers = [];
     private ?string $body = "";
     private static ?Response $last_response = null;
 
     /**
      * Send a JSON response
      *
-     * @param array $data The data to send
+     * @param ?array $data The data to send
      * @param integer $status The HTTP status code
      * @return void
      */
-    public function json(array $data, int $status = 200) {
+    public function json(?array $data, int $status = 200) {
         $response = new Response();
         $response->setHeader("Content-Type", "application/json");
         $response->setBody(json_encode($data));
@@ -118,10 +118,10 @@ class Response {
      *
      * @param string $body The response body
      * @param integer $status The HTTP status code
-     * @param array $headers The HTTP headers
+     * @param ?array $headers The HTTP headers
      * @return void
      */
-    public function __construct(string $body = "", int $status = 200, array $headers = []) {
+    public function __construct(string $body = "", int $status = 200, ?array $headers = []) {
         $this->status = $status;
         $this->headers = $headers;
         $this->body = $body;
@@ -141,7 +141,7 @@ class Response {
     /**
      * Add a header to the response
      *
-     * @param array $headers The HTTP headers
+     * @param ?array $headers The HTTP headers
      * @return void
      */
     public function setHeader(string $header, string $value) {
@@ -231,7 +231,7 @@ class Response {
 
 }
 
-function response(string $body = "", int $status = 200, array $headers = []) {
+function response(string $body = "", int $status = 200, ?array $headers = []) {
     $response = new Response($body, $status, $headers);
     return $response;
 }

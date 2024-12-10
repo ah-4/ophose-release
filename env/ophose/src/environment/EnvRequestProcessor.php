@@ -90,7 +90,6 @@ class EnvRequestProcessor {
             $loaded->endpoints();
             $loaded->runEndpoint($endpoint);
             return Response::sendLastResponseAndDie();
-            break;
         case "JS":
             if($endpoint == '') {
                 response()->file($envPath . '/env.js');
@@ -98,13 +97,11 @@ class EnvRequestProcessor {
                 response()->file($envPath . '/js/' . $endpoint . '.js');
             }
             return Response::sendLastResponseAndDie();
-            break;
         default:
             response()->json([
                 "error" => "Invalid environment request"
             ], status: 400);
             return Response::sendLastResponseAndDie();
-            break;
         }
 
     }
