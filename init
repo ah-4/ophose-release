@@ -130,7 +130,9 @@ class OphoseInitializer
     {
         if (!str_ends_with($filename, '/')) {
             $zip->extractTo($this->tmp_dir, $original_filename);
-            copy($this->tmp_dir . "/" . $original_filename, to: __DIR__ . "/" . $filename);
+            $dirname = dirname(__DIR__ . "/" . $filename);
+            if (!file_exists($dirname)) mkdir($dirname, 0777, true);
+            copy($this->tmp_dir . "/" . $original_filename, __DIR__ . "/" . $filename);
         }
     }
 
