@@ -43,7 +43,7 @@ function compile() {
 
     $required_files = array_map(function($file) {
         $fixed_path = str_replace('\/', DIRECTORY_SEPARATOR, $file);
-        return realpath(ROOT . "/ophose/js/" . $fixed_path);
+        return o_realpath(ROOT . "/ophose/js/" . $fixed_path);
     }, $js_order);
 
     $content = "";

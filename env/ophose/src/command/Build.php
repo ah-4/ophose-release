@@ -59,7 +59,7 @@ class BuildFile {
 
         if($path != "env") {
             $matches = array_map(function($match) use ($path) {
-                return realpath(ROOT . "/" . $path . "/" . $match . ".js");
+                return o_realpath(ROOT . "/" . $path . "/" . $match . ".js");
             }, $matches);
         }else{
             $matches = array_map(function($match) {
@@ -82,9 +82,9 @@ class BuildFile {
 
                 $jsPath = implode("/", array_slice($envInfos, $usedNameCount));
                 if(empty($jsPath)) {
-                    return realpath($envPath . "/env.js");
+                    return o_realpath($envPath . "/env.js");
                 } else {
-                    return realpath($envPath . "/js/" . $jsPath . ".js");
+                    return o_realpath($envPath . "/js/" . $jsPath . ".js");
                 }
             }, $matches);
         }
@@ -217,7 +217,7 @@ class Build {
     }
 
     public function getJSBaseFile() {
-        return realpath(ROOT . "/components/Base.js");
+        return o_realpath(ROOT . "/components/Base.js");
     }
 
     // Use files

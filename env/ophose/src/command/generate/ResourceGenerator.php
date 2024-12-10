@@ -58,7 +58,7 @@ class ResourceGenerator {
      * @param array $data The data to replace in the files
      */
     protected function copyDirectory(string $source, string $destination, array $data = []) {
-        $source = realpath($source);
+        $source = o_realpath($source);
         if(!is_dir($destination)) {
             mkdir($destination, 0755, true);
         }
