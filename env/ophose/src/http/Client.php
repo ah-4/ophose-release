@@ -45,6 +45,11 @@ class Client
     private CurlHandle|false|null $ch = null;
 
     /**
+     * @var bool $encode_to_json If the response should be JSON encoded.
+     */
+    private bool $encode_to_json = true;
+
+    /**
      * @var array $cookies The cookies sent with the request.
      */
     private array $cookies = [];
@@ -198,6 +203,17 @@ class Client
     }
 
     /**
+     * Encode or not the request to JSON
+     * 
+     * @param bool $encode if the request should be encoded to JSON
+     * @return $this
+     */
+    public function encodeRequestToJson(bool $encode = true) {
+        $this->encode_to_json = $encode;
+        return $this;
+    }
+
+    /**
      * Sends the HTTP request prepared by the client.
      * 
      * @return $this
@@ -223,7 +239,7 @@ class Client
         curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, $this->method);
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
         if ($this->body !== null) {
-            if(is_array($this->body)) $this->body = json_encode($this->body);
+            if(is_array($this->body) && $this->encode_to_json) $this->body = json_encode($this->body);
             curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->body);
         }
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, $this->headers);
