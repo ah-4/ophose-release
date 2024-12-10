@@ -6,7 +6,6 @@ use CurlHandle;
 use Ophose\Response;
 use Ophose\Http\Exception\RequestNotSentException;
 
-use Ophose\Test\Test;
 use function Ophose\Util\configuration;
 
 /**
@@ -45,9 +44,9 @@ class Client
     private CurlHandle|false|null $ch = null;
 
     /**
-     * @var bool $encode_to_json If the response should be JSON encoded.
+     * @var ?string $body_encoding If the response should be JSON encoded.
      */
-    private bool $encode_to_json = true;
+    private ?string $body_encoding = null;
 
     /**
      * @var array $cookies The cookies sent with the request.
@@ -203,13 +202,17 @@ class Client
     }
 
     /**
-     * Encode or not the request to JSON
+     * Encode or not the request
+     * Available options are:
+     * - json
+     * - form (default)
+     * - query
      * 
-     * @param bool $encode if the request should be encoded to JSON
+     * @param string $encode if the request should be encoded.
      * @return $this
      */
-    public function encodeRequestToJson(bool $encode = true) {
-        $this->encode_to_json = $encode;
+    public function encode(string $encode): static{
+        $this->body_encoding = $encode;
         return $this;
     }
 
@@ -239,7 +242,8 @@ class Client
         curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, $this->method);
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
         if ($this->body !== null) {
-            if(is_array($this->body) && $this->encode_to_json) $this->body = json_encode($this->body);
+            if(is_array($this->body) && $this->body_encoding == "json") $this->body = json_encode($this->body);
+            if(is_array($this->body) && $this->body_encoding == "query") $this->body = http_build_query($this->body);
             curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->body);
         }
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, $this->headers);

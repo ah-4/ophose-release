@@ -33,7 +33,7 @@ class CmdBuild extends Command
         $ophose_build_content .= "\n" . $this->getAppBuilt();
         $request = client('https://www.toptal.com/developers/javascript-minifier/api/raw')->post([
             'input' => $ophose_build_content
-        ]);
+        ])->encode('query');
         $request->send();
         $compiled_app = $request->response();
         file_put_contents(ROOT . 'public/app.js', $compiled_app);

@@ -54,7 +54,7 @@ class BuildFile {
         preg_match_all('/^' . $importFunction . '\(("|\'|`)(.*)("|\'|`)\)/m', $this->content, $matches);
         $matches = array_map(function($match) use (&$original) {
             $original[] = $match;
-            return str_replace('@/', '.ext/', $match);
+            return str_replace('@/', 'ext/', $match);
         }, $matches[2]);
 
         if($path != "env") {
@@ -180,7 +180,7 @@ class BuildFile {
     public function getFullContent() {
         $content = "";
         foreach($this->dependencies as $file) {
-            $content .= $file->getContent();
+            $content .= $file->getContent() . "\n";
         }
         $content .= $this->content;
         return $content;
