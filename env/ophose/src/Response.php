@@ -43,8 +43,9 @@ class Response {
      * @param integer $status The HTTP status code
      * @return void
      */
-    public function file(mixed $filePath, int $status = 200) {
+    public function file(string $filePath, int $status = 200) {
         $response = new Response();
+        $filePath = o_realpath($filePath);
         if(!$filePath || !file_exists($filePath) || is_dir($filePath)) {
             $response->setBody("File not found");
             $response->setStatus(404);

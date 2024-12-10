@@ -78,7 +78,7 @@ if(isTargetRequest('/@ojs/')) {
 // COMPONENT REQUEST
 if(isTargetRequest('/@component/')) {
     // Component request as ('/@component/' + ophoseFile)
-    $REQUEST_FILE_PATH = o_realpath(ROOT . 'components/' . $REQUEST_FIXED_URL);
+    $REQUEST_FILE_PATH = ROOT . 'components/' . $REQUEST_FIXED_URL;
     response()->file($REQUEST_FILE_PATH);
     Response::sendLastResponseAndDie();
 }
